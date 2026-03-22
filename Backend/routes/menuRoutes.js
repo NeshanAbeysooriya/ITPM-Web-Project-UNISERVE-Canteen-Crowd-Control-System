@@ -1,11 +1,12 @@
-const express = require('express');
-const router = express.Router();
-const {
+import express from 'express';
+import {
     getMenuItems,
     addMenuItem,
     updateMenuItem,
     deleteMenuItem
-} = require('../controllers/menuController');
+} from '../controllers/menuController.js';
+
+const router = express.Router();
 
 // Route: /api/menu
 router.route('/')
@@ -17,4 +18,4 @@ router.route('/:id')
     .put(updateMenuItem)
     .delete(deleteMenuItem);
 
-module.exports = router;
+export default router;

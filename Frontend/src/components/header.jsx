@@ -40,7 +40,6 @@ export default function Header() {
             {[
               { name: "Home", path: "/" },
               { name: "Menu", path: "/menu" },
-              { name: "Menu", path: "/products" },
               { name: "Orders", path: "/orders" },
               { name: "About", path: "/about" },
               { name: "Feedback", path: "/feedback" },
@@ -142,7 +141,6 @@ export default function Header() {
               {[
                 { name: "Home", path: "/" },
                 { name: "Menu", path: "/menu" },
-                { name: "Menu", path: "/products" },
                 { name: "Orders", path: "/orders" },
                 { name: "About", path: "/about" },
                 { name: "Feedback", path: "/feedback" },

@@ -9,6 +9,7 @@ export default function HomePage() {
       <Header />
       <Routes path="/">
         <Route path="/" element={<UserHomePage/>} />
+        <Route path="/menu" element={<h1>Menu Management</h1>} />
         <Route path="/feedback" element={<h1>Feedback</h1>} />
         <Route path="/about" element={<AboutUsPage/>} />
         <Route path="/*" element={<h1>404 Not Found</h1>} />

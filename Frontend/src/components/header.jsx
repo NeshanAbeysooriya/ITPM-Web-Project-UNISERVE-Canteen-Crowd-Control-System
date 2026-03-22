@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { MdMenu, MdOutlineShoppingCart, MdNotificationsNone } from "react-icons/md";
 import { Link } from "react-router-dom";
+import UserData from "./userData";
+import UserDataMobile from "./userDataMobile";
 
 export default function Header() {
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
@@ -38,6 +40,7 @@ export default function Header() {
             {[
               { name: "Home", path: "/" },
               { name: "Menu", path: "/menu" },
+              { name: "Menu", path: "/products" },
               { name: "Orders", path: "/orders" },
               { name: "About", path: "/about" },
               { name: "Feedback", path: "/feedback" },
@@ -98,6 +101,7 @@ export default function Header() {
             {/* User Area */}
             <div className="hidden sm:block">
              
+              <UserData />
             </div>
           </div>
         </div>
@@ -138,6 +142,7 @@ export default function Header() {
               {[
                 { name: "Home", path: "/" },
                 { name: "Menu", path: "/menu" },
+                { name: "Menu", path: "/products" },
                 { name: "Orders", path: "/orders" },
                 { name: "About", path: "/about" },
                 { name: "Feedback", path: "/feedback" },
@@ -159,6 +164,7 @@ export default function Header() {
 
             <div className="mt-auto p-6 border-t border-bordercolor/30">
               
+              <UserDataMobile />
             </div>
           </div>
         </>

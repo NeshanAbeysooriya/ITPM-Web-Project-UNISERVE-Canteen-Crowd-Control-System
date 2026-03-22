@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import userRouter from "./routes/userRouter.js";
+import menuRouter from "./routes/menuRoutes.js";
 import jwt from "jsonwebtoken";
 //import cors
 import cors from "cors";
@@ -59,6 +60,7 @@ mongoose.connect(connectionString).then(
 
 
 app.use("/api/users", userRouter)
+app.use("/api/menu", menuRouter)
 
 
 

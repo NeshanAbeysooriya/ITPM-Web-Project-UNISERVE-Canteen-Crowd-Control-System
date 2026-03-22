@@ -10,11 +10,11 @@ export default function Footer() {
     { icon: FaTwitter, href: "https://x.com/yourcanteen", label: "X / Twitter" },
     { icon: FaTiktok, href: "https://tiktok.com/@yourcanteen", label: "TikTok" },
   ];
-
+zz
   const quickLinks = [
-    { name: "Pre-Order Now", href: "/products" },
-    { name: "My Orders", href: "/orders" },
-    { name: "Menu & Prices", href: "/products" },
+    { name: "Pre-Order Now", href: "/menu" },
+    { name: "My Orders", href: "/orders" }, 
+    { name: "Menu & Prices", href: "/menu" },
     { name: "How Pre-Order Works", href: "/how-it-works" },
   ];
 

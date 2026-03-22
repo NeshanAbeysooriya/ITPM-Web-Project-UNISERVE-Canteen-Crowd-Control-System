@@ -39,6 +39,7 @@ export default function Header() {
           <nav className="hidden lg:flex items-center gap-8 xl:gap-10">
             {[
               { name: "Home", path: "/" },
+              { name: "Menu", path: "/menu" },
               { name: "Menu", path: "/products" },
               { name: "Orders", path: "/orders" },
               { name: "About", path: "/about" },
@@ -99,6 +100,7 @@ export default function Header() {
 
             {/* User Area */}
             <div className="hidden sm:block">
+             
               <UserData />
             </div>
           </div>
@@ -139,6 +141,7 @@ export default function Header() {
             <nav className="flex flex-col py-6 px-2">
               {[
                 { name: "Home", path: "/" },
+                { name: "Menu", path: "/menu" },
                 { name: "Menu", path: "/products" },
                 { name: "Orders", path: "/orders" },
                 { name: "About", path: "/about" },
@@ -160,6 +163,7 @@ export default function Header() {
             </nav>
 
             <div className="mt-auto p-6 border-t border-bordercolor/30">
+              
               <UserDataMobile />
             </div>
           </div>

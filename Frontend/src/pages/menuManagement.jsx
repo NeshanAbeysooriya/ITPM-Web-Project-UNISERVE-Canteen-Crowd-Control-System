@@ -25,7 +25,11 @@ export default function MenuManagement() {
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+<<<<<<< HEAD
   const [search, setSearch] = useState(""); 
+=======
+  const [search, setSearch] = useState("");
+>>>>>>> bb15a5882945d0b0c69c94dba318d9858bb4d37e
   const [filterCategory, setFilterCategory] = useState("All");
 
   async function loadMenu() {

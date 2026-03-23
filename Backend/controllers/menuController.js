@@ -30,6 +30,30 @@ exports.getMenuItems = async (req, res) => {
 // @route   POST /api/menu
 exports.addMenuItem = async (req, res) => {
     try {
+        // Generate menuID safely (avoid replace on undefined) and avoid duplicates.
+        delete req.body.menuID; // always backend-generated
+        delete req.body.menuId; // remove legacy field if submitted
+
+        const lastMenuItem = await Menu.find()
+            .sort({ createdAt: -1 })
+            .limit(1);
+        let newMenuID = "M0000001";
+
+        if (lastMenuItem.length !== 0) {
+            const candidate = lastMenuItem[0].menuID || lastMenuItem[0].menuId || "";
+            const lastMenuID = String(candidate).trim();
+            const match = /^M(\d+)$/.exec(lastMenuID);
+            if (match) {
+                const lastNumber = Number.parseInt(match[1], 10);
+                if (!Number.isNaN(lastNumber)) {
+                    const nextNumber = lastNumber + 1;
+                    newMenuID = "M" + nextNumber.toString().padStart(7, "0");
+                }
+            }
+        }
+
+        req.body.menuID = newMenuID;
+
         const newItem = await Menu.create(req.body);
         res.status(201).json({ success: true, data: newItem });
     } catch (err) {
@@ -41,6 +65,9 @@ exports.addMenuItem = async (req, res) => {
 // @route   PUT /api/menu/:id
 exports.updateMenuItem = async (req, res) => {
     try {
+        // Prevent menuID changes: keep identity stable and avoid unique conflict.
+        if (req.body.menuID) delete req.body.menuID;
+
         const item = await Menu.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true

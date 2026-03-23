@@ -1,6 +1,18 @@
 const mongoose = require('mongoose');
 
+<<<<<<< Updated upstream
 const menuSchema = new mongoose.Schema({
+=======
+const menuSchema = new mongoose.Schema(
+{   
+    menuID: {
+        type: String,
+        required: true,
+        unique: true
+    },
+
+    
+>>>>>>> Stashed changes
     name: { 
         type: String, 
         required: [true, "Please add a food item name"], 

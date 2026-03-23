@@ -156,7 +156,7 @@ export default function UserHomePage() {
               Ready to break the <br /> 
               queue culture?
             </h2>
-            <Link to="/products" className="inline-block bg-secondary text-primary px-12 py-6 rounded-2xl font-black text-xl hover:scale-105 transition-transform shadow-2xl">
+            <Link to="/menu" className="inline-block bg-secondary text-primary px-12 py-6 rounded-2xl font-black text-xl hover:scale-105 transition-transform shadow-2xl">
               Get Started Now
             </Link>
           </div>

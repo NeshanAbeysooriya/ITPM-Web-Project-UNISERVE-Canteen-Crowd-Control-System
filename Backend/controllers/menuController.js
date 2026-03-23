@@ -28,7 +28,7 @@ export const getMenuItems = async (req, res) => {
 
 // @desc    Add a new menu item
 // @route   POST /api/menu
-export const addMenuItem = async (req, res) => {
+export const addMenuItem= async (req, res) => {
     try {
         const newItem = await Menu.create(req.body);
         res.status(201).json({ success: true, data: newItem });
@@ -39,7 +39,7 @@ export const addMenuItem = async (req, res) => {
 
 // @desc    Update menu item (Details or Sold Out Toggle)
 // @route   PUT /api/menu/:id
-export const updateMenuItem = async (req, res) => {
+export const updateMenuItem  = async (req, res) => {
     try {
         const item = await Menu.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
@@ -54,6 +54,7 @@ export const updateMenuItem = async (req, res) => {
 
 // @desc    Delete a menu item
 // @route   DELETE /api/menu/:id
+
 export const deleteMenuItem = async (req, res) => {
     try {
         const item = await Menu.findByIdAndDelete(req.params.id);

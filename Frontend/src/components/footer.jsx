@@ -10,7 +10,7 @@ export default function Footer() {
     { icon: FaTwitter, href: "https://x.com/yourcanteen", label: "X / Twitter" },
     { icon: FaTiktok, href: "https://tiktok.com/@yourcanteen", label: "TikTok" },
   ];
-zz
+
   const quickLinks = [
     { name: "Pre-Order Now", href: "/menu" },
     { name: "My Orders", href: "/orders" }, 

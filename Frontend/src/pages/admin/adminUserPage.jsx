@@ -39,47 +39,52 @@ function UserBlockConfirm(props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-[100] flex justify-center items-center px-4">
-      <div className="bg-primary rounded-2xl shadow-xl w-full max-w-md relative p-6">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center px-4 transition-all">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md relative p-8 transform transition-all">
         {/* Close button (top-right) */}
         <button
           onClick={close}
-          className="absolute top-[-42px] right-[-42px] w-[40px] h-[40px] bg-white hover:bg-red-500 rounded-full flex justify-center items-center"
+          className="absolute top-4 right-4 w-10 h-10 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-full flex justify-center items-center transition-colors"
         >
-          <IoClose className="text-gray-700 text-lg" />
+          <IoClose className="text-xl" />
         </button>
 
-        {/* Warning Icon */}
-        <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
-            <FaLock className="text-2xl" />
+        {/* Dynamic Warning Icon */}
+        <div className="flex justify-center mb-6">
+          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center rotate-3 ${props.user.isBlock ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
+            {props.user.isBlock ? <FaLockOpen className="text-3xl -rotate-3" /> : <FaLock className="text-3xl -rotate-3" />}
           </div>
         </div>
 
         {/* Title */}
-        <h2 className="text-xl font-semibold text-center mb-2 text-gray-800">
-          Block User
+        <h2 className="text-2xl font-bold text-center mb-2 text-gray-800">
+          {props.user.isBlock ? "Unblock User" : "Block User"}
         </h2>
 
         {/* Description */}
-        <p className="text-center text-gray-600 mb-6">
-          Are you sure you want to {props.user.isBlock?"Unblock":"Block"} the user with email {""}
-          <span className="font-bold">{email}</span>?
+        <p className="text-center text-gray-500 mb-8 leading-relaxed">
+          Are you sure you want to <span className={props.user.isBlock ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>{props.user.isBlock ? "Unblock" : "Block"}</span> the user:
+          <br />
+          <span className="font-medium text-gray-900 mt-1 block px-3 py-1 bg-gray-50 rounded-lg border border-gray-100 inline-block">{email}</span>
         </p>
 
         {/* Action buttons */}
-        <div className="flex justify-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-3">
           <button
             onClick={close}
-            className="px-5 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+            className="flex-1 px-6 py-3 rounded-xl font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all order-2 sm:order-1"
           >
             Cancel
           </button>
           <button
             onClick={blockUser}
-            className="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+            className={`flex-1 px-6 py-3 rounded-xl font-medium text-white shadow-lg transition-all order-1 sm:order-2 ${
+              props.user.isBlock 
+              ? "bg-green-600 hover:bg-green-700 shadow-green-200" 
+              : "bg-red-600 hover:bg-red-700 shadow-red-200"
+            }`}
           >
-            Block
+            {props.user.isBlock ? "Confirm Unblock" : "Confirm Block"}
           </button>
         </div>
       </div>
@@ -122,7 +127,7 @@ export default function AdminUsersPage() {
   //isLoading ek haddissiye hari venas vunoth me function ek aye run venva
 
   return (
-    <div className="w-full h-full p-6 bg-primary">
+    <div className="min-h-screen w-full p-4 md:p-8 bg-[#F8FAFC]">
       {isBlockConfirmVisible && (
         <UserBlockConfirm
           refresh={() => {
@@ -135,95 +140,115 @@ export default function AdminUsersPage() {
         />
       )}
 
-      <h1 className="text-3xl font-bold text-accent mb-6">User Management</h1>
+      <div className="max-w-7xl mx-auto">
+        <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">User Management</h1>
+            <p className="text-slate-500 mt-1">Manage permissions, roles, and access for your community.</p>
+          </div>
+        </header>
 
-      <div className="overflow-x-auto rounded-2xl shadow-lg border border-boardercolor">
-        {isLoading ? (
-          <Loder />
-        ) : (
-          <table className="w-full border-collapse">
-            <thead className="bg-accent text-white">
-              <tr>
-                <th className="py-3 px-4">Image</th>
-                <th className="py-3 px-4">Email</th>
-                <th className="py-3 px-4">First Name</th>
-                <th className="py-3 px-4">Last Name</th>
-                <th className="py-3 px-4">Role</th>
-                <th className="py-3 px-4">Actions</th>
-              </tr>
-            </thead>
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+          {isLoading ? (
+            <div className="py-20 flex justify-center"><Loder /></div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-200">
+                    <th className="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-500">Member</th>
+                    <th className="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-500">Details</th>
+                    <th className="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-500 text-center">Role</th>
+                    <th className="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-500 text-center">Actions</th>
+                  </tr>
+                </thead>
 
-            <tbody className="divide-y divide-boardercolor bg-white">
-              {users.map((user) => (
-                <tr key={user.email} className="hover:bg-primary">
-                  <td className="py-3 px-4">
-                    <img
-                      src={user.image}
-                      referrerPolicy="no-referrer" // google login profile image ek pennanne mehem demmoth vitrayi
-                      alt={user.firstName}
-                      className={`w-14 h-14 rounded-full object-cover border-2 p-1 ${
-                        user.isBlock ? "border-red-600" : "border-green-600"
-                      }`}
-                    />
-                  </td>
+                <tbody className="divide-y divide-slate-100">
+                  {users.map((user) => (
+                    <tr key={user.email} className="hover:bg-slate-50/80 transition-colors group">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-4">
+                          <div className="relative">
+                            <img
+                              src={user.image}
+                              referrerPolicy="no-referrer" // google login profile image ek pennanne mehem demmoth vitrayi
+                              alt={user.firstName}
+                              className={`w-12 h-12 rounded-2xl object-cover ring-2 ring-offset-2 transition-all ${
+                                user.isBlock ? "ring-red-500/30" : "ring-green-500/30"
+                              }`}
+                            />
+                            <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${user.isBlock ? "bg-red-500" : "bg-green-500"}`}></span>
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900">{user.firstName} {user.lastName}</p>
+                            <p className="text-sm text-slate-500 flex items-center gap-1">
+                              {user.email}
+                              {user.isEmailVerified && <MdVerified className="text-blue-500" title="Verified" />}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
 
-                  <td className="py-3 px-4">
-                    {user.email}
-                    {user.isEmailVerified && (
-                      <MdVerified className="inline ml-1 text-blue-500" />
-                    )}
-                  </td>
+                      <td className="py-4 px-6">
+                         <span className="text-sm text-slate-600 font-medium">Active Session</span>
+                      </td>
 
-                  <td className="py-3 px-4 font-semibold">{user.firstName}</td>
+                      {/* ===== ROLE COLOR BADGE ===== */}
+                      <td className="py-4 px-6">
+                        <div className="flex justify-center">
+                          <span
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-sm
+                              ${
+                                user.role === "admin"
+                                  ? "bg-rose-50 text-rose-600 ring-1 ring-inset ring-rose-600/10"
+                                  : "bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-600/10"
+                              }`}
+                          >
+                            {user.role === "admin" && <MdOutlineAdminPanelSettings className="text-sm" />}
+                            {user.role.toUpperCase()}
+                          </span>
+                        </div>
+                      </td>
 
-                  <td className="py-3 px-4 font-semibold">{user.lastName}</td>
+                      {/* ===== BLOCK / UNBLOCK ===== */}
+                      <td className="py-4 px-6">
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => {
+                              setUserToBlock(user); //block userv select karagannva
+                              setIsBlockConfirmVisible(true);
+                            }}
+                            title={user.isBlock ? "Unblock User" : "Block User"}
+                            className={`p-2.5 rounded-xl transition-all border ${
+                              user.isBlock
+                                ? "text-emerald-600 bg-emerald-50 border-emerald-100 hover:bg-emerald-600 hover:text-white"
+                                : "text-rose-600 bg-rose-50 border-rose-100 hover:bg-rose-600 hover:text-white"
+                            }`}
+                          >
+                            {user.isBlock ? <FaLockOpen size={18} /> : <FaLock size={18} />}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
 
-                  {/* ===== ROLE COLOR BADGE ===== */}
-                  <td className="py-3 px-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-semibold inline-flex items-center gap-1
-                        ${
-                          user.role === "admin"
-                            ? "bg-red-100 text-red-600"
-                            : "bg-green-100 text-green-600"
-                        }`}
-                    >
-                      {user.role === "admin" && <MdOutlineAdminPanelSettings />}
-                      {user.role}
-                    </span>
-                  </td>
-
-                  {/* ===== BLOCK / UNBLOCK ===== */}
-                  <td className="py-3 px-4">
-                    <div className="flex justify-center">
-                      <button
-                        onClick={() => {
-                          setUserToBlock(user); //block userv select karagannva
-                          setIsBlockConfirmVisible(true);
-                        }}
-                        className={`p-2 rounded-full ${
-                          user.isBlock
-                            ? "text-green-600 hover:bg-green-100"
-                            : "text-red-600 hover:bg-red-100"
-                        }`}
-                      >
-                        {user.isBlock ? <FaLockOpen /> : <FaLock />}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {users.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="py-10 text-center text-gray-400">
-                    No Users to display
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
+                  {users.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="py-20 text-center">
+                        <div className="flex flex-col items-center">
+                            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3">
+                                <IoClose className="text-slate-400 text-3xl" />
+                            </div>
+                            <p className="text-slate-400 font-medium text-lg">No Users to display</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

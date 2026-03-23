@@ -13,7 +13,7 @@ import Header from "../components/header";
 import Footer from "../components/footer";
 import UserSettings from "./settings";
 import UserOverview from "./userOverview";
-import UserFeedback from "./userFeedback";
+
 
 // Import your sub-pages (or define them as smaller components below)
 
@@ -94,7 +94,7 @@ export default function UserDashboard() {
             <Routes>
               <Route path="/" element={<UserOverview/>} />
               <Route path="/orders" element={<h1>order</h1>} />
-              <Route path="/feedback" element={<UserFeedback/>} />
+              <Route path="/feedback" element={<h1> Feedback</h1>} />
               <Route path="/settings" element={<UserSettings />} />
             </Routes>
           </div>

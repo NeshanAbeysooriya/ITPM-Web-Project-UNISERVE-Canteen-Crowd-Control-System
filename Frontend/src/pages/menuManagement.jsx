@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import Footer from "../components/footer";
 
 const initialForm = {
-  menuId: "",
+  menuID: "",
   name: "",
   description: "",
   price: "",
@@ -61,18 +61,12 @@ export default function MenuManagement() {
     event.preventDefault();
     setError("");
 
-    if (!form.name.trim() || !form.description.trim() || !form.price) {
-      setError("Name, description and price are required.");
-      return;
-    }
-
-    if (form.menuId && (Number(form.menuId) <= 0 || !Number.isInteger(Number(form.menuId)))) {
-      setError("Menu ID must be a positive integer.");
+    if (!form.name.trim() || !form.description.trim() || !form.price || !form.category) {
+      setError("Name, description, price and category are required.");
       return;
     }
 
     const payload = {
-      menuId: form.menuId ? Number(form.menuId) : Date.now(),
       name: form.name.trim(),
       description: form.description.trim(),
       price: Number(form.price),
@@ -82,6 +76,11 @@ export default function MenuManagement() {
       prepTime: Number(form.prepTime) || 15,
       isAvailable: Boolean(form.isAvailable),
     };
+
+    // Include menuID only for updates
+    if (isEditing) {
+      payload.menuID = form.menuID;
+    }
 
     try {
       setLoading(true);
@@ -93,8 +92,9 @@ export default function MenuManagement() {
       await loadMenu();
       resetForm();
     } catch (e) {
-      console.error(e);
-      setError("Failed to save menu item. Please verify input and try again.");
+      console.error("Save menu error", e.response?.data || e.message);
+      const serverMessage = e.response?.data?.message || e.message;
+      setError(serverMessage || "Failed to save menu item. Please verify input and try again.");
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,7 @@ export default function MenuManagement() {
 
   const handleEdit = (item) => {
     setForm({
-      menuId: item.menuId || "",
+      menuID: item.menuID,
       name: item.name,
       description: item.description,
       price: item.price,
@@ -172,21 +172,19 @@ export default function MenuManagement() {
           <h2 className="text-2xl font-bold mb-4">{isEditing ? "Edit" : "Add"} Food Item</h2>
           <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
             <input
-              value={form.menuId}
-              onChange={(e) => setForm((p) => ({ ...p, menuId: e.target.value }))}
-              placeholder="Item ID (positive number)"
-              type="number"
-              min="1"
-              step="1"
-              required
-              className="p-3 rounded-xl bg-white/90 border border-bordercolor"
-            />
-            <input
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               placeholder="Item name"
               className="p-3 rounded-xl bg-white/90 border border-bordercolor"
             />
+            {isEditing && (
+              <input
+                value={form.menuID}
+                readOnly
+                placeholder="Menu ID"
+                className="p-3 rounded-xl bg-gray-100 border border-bordercolor"
+              />
+            )}
             <input
               value={form.price}
               onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
@@ -303,7 +301,7 @@ export default function MenuManagement() {
                 <div key={item._id} className="bg-white/10 border border-bordercolor rounded-2xl p-4 shadow-sm">
                   <div className="flex justify-between items-start gap-3 mb-3">
                     <div className="flex-1">
-                      <p className="text-xs text-secondary/60 mb-1">ID: {item.menuId || item._id}</p>
+                      <p className="text-xs text-secondary/60 mb-1">ID: {item.menuID}</p>
                       <h3 className="text-xl font-bold">{item.name}</h3>
                       <p className="text-sm text-secondary/80">{item.category}</p>
                     </div>

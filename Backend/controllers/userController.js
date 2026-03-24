@@ -41,7 +41,7 @@ export function createUser(req, res) {
             })
         }
     ).catch(
-        () => {
+        (error) => {
 
             // 🔴 Handle duplicate email error
             if (error.code === 11000) {

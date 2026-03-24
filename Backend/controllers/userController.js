@@ -2,8 +2,24 @@ import axios from "axios";
 import User from "../models/user.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+import OTP from "../models/otpModel.js";
+import getDesignEmail from "../lib/emailDesigner.js"
 
 
+dotenv.config();
+//transporter email geniyann hadanva
+const transporter = nodemailer.createTransport({//me okkoma default eva meva wenas karann ona na
+    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.APP_PASSWORD,
+    },
+});
 
 export function createUser(req, res) {
 
@@ -25,7 +41,7 @@ export function createUser(req, res) {
             })
         }
     ).catch(
-        () => {
+        (error) => {
 
             // 🔴 Handle duplicate email error
             if (error.code === 11000) {
@@ -283,3 +299,191 @@ export async function getAllUsers(req, res) {
     }
 }
 
+export async function blockOrUnblockUser(req, res) {
+    console.log(req.user);
+    if (!isAdmin(req)) {
+        res.status(403).json({
+            message: "Forbidden",
+        });
+        return;
+    }
+
+    if (req.user.email === req.params.email) {
+        res.status(400).json({
+            message: "You cannot block yourself",
+        });
+        return;
+    }
+
+    try {
+        await User.updateOne(
+            {
+                email: req.params.email,
+            },
+            {
+                isBlock: req.body.isBlock,
+            }
+        );
+
+        res.json({
+            message: "User block status updated successfully",
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: "Failed to block/unblock user",
+        });
+    }
+}
+
+//usert email ekt code ekk yavan vidiy froget password valadi
+
+export async function sendOTP(req, res) {
+    const email = req.params.email;//request eke parameter vala dala evan email ek gannva
+    if (email == null) {// email ekk nathnm
+        res.status(400).json({
+            message: "Email is required",
+        });
+        return;
+    }
+
+    // 100000 - 999999 number 6k random valu ekk me range ek atahra
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    try {
+        const user = await User.findOne({ email: email });
+
+        const firstName = user ? user.firstName : "there";
+
+        if (user == null) {
+            res.status(404).json({
+                message: "User not found",
+            });
+            return;
+        }
+
+        await OTP.deleteMany({//email ekem thiyena okkoma OTP tika delete karanva
+            email: email,
+        });
+
+        const newOTP = new OTP({// new OTP 
+            email: email,
+            otp: otp.toString(),
+        });
+        await newOTP.save();// new OTP ek save kara gannva
+
+
+
+        await transporter.sendMail({//send karana mail ek
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Password Reset OTP – Crystal Beauty Clear",
+            html: getDesignEmail({ otp, userName: firstName }),
+
+        });
+
+        res.json({
+            message: "OTP sent to your email",
+        });
+
+        console.log("SEND OTP API HIT:", req.params.email);
+    } catch (err) {
+        console.error("SEND OTP ERROR FULL:", err);
+        res.status(500).json({
+            message: "Failed to send OTP",
+        });
+    }
+
+}
+//email ek verified karagann function ek
+export async function changePasswordViaOTP(req, res) {
+    const email = req.body.email;//mail ek
+    const otp = req.body.otp;//otp ek
+    const newPassword = req.body.newPassword;// new password ek
+    try {
+        const otpRecord = await OTP.findOne({//me email eke me otp ek thiyena ekk hoyagannva vena otp ahuvenne na
+            email: email,
+            otp: otp.toString().trim(),
+        });
+
+        if (otpRecord == null) {//OTP ekk nathnm message ekk yavanva invalid kiyla
+            res.status(400).json({
+                message: "Invalid OTP",
+            });
+            return;
+        }
+
+        await OTP.deleteMany({//me email ekt adala okkom otp tika delete karanva
+            email: email,
+        });
+
+        const hashedPassword = bcrypt.hashSync(newPassword, 10);//newpassword ek hash karanva
+
+        await User.updateOne(//ita passe userge email and password update kara gannva
+            {
+                email: email,
+            },
+            {
+                password: hashedPassword,
+            }
+        );
+        res.json({
+            message: "Password changed successfully",
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: "Failed to change password",
+        });
+    }
+}
+
+export async function updateUserData(req, res) {
+    if (req.user == null) {//check user null
+        res.status(401).json({
+            message: "Unauthorized",
+        });
+        return;
+    }
+
+    try {
+
+        await User.updateOne({//update karana kenage mail ek aragen e mail ekt anuwa update karanva
+            email: req.user.email
+        }, {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            image: req.body.image
+        })
+        res.json({
+            message: "User data updated successfully",
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: "Failed to update user data",
+        });
+    }
+}
+
+export async function updatePassword(req, res) {
+    if (req.user == null) {
+        res.status(401).json({
+            message: "Unauthorized",
+        });
+        return;
+    }
+    try {
+        const hashedPassword = bcrypt.hashSync(req.body.password, 10);//hash password ek hadagannva
+        await User.updateOne({
+            email: req.user.email
+        }, {
+            password: hashedPassword
+        })
+        res.json({
+            message: "Password updated successfully",
+        });
+    }
+    catch (err) {
+        res.status(500).json({
+            message: "Failed to update password",
+        });
+    }
+}

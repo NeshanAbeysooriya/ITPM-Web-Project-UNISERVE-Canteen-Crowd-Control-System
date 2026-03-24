@@ -3,18 +3,20 @@ import {
     getMenuItems,
     addMenuItem,
     updateMenuItem,
-    deleteMenuItem
+    deleteMenuItem,
+    getMenuItemById
 } from '../controllers/menuController.js';
 
 const router = express.Router();
 
-// Route: /api/menu
+// Route: /api/menus
 router.route('/')
     .get(getMenuItems)
     .post(addMenuItem);
 
-// Route: /api/menu/:id
+// Route: /api/menus/:id
 router.route('/:id')
+.get(getMenuItemById)
     .put(updateMenuItem)
     .delete(deleteMenuItem);
 

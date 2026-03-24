@@ -11,6 +11,10 @@ import AdminUsersPage from "./admin/adminUserPage";
 import AdminDashboard from "./admin/adminDashboard";
 import { VscFeedback } from "react-icons/vsc";
 import { LuActivity } from "react-icons/lu";
+import AdminFeedbackPage from "./admin/adminFeedbackPage";
+import AdminMenuPage from "./admin/adminMenuPage";
+import AddMenuPage from "./admin/adminAddNewMenu";
+import UpdateMenuPage from "./admin/adminUpdateMenu";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -276,8 +280,12 @@ export default function AdminPage() {
           {userLoaded ? (
             <Routes>
               <Route path="/" element={<AdminDashboard />} />
+              <Route path="/menu" element={<AdminMenuPage />} />
+              <Route path="/add-menu" element={<AddMenuPage/>} />
+              <Route path="/update-menu" element={<UpdateMenuPage/>} />
               <Route path="/users" element={<AdminUsersPage />} />
-              {/* Add more routes later */}
+              <Route path="/feedback" element={<AdminFeedbackPage />} />
+             
             </Routes>
           ) : (
             <div className="h-[70vh] flex items-center justify-center">

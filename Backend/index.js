@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import cors from "cors";
 import dotenv from "dotenv";
 import orderRouter from "./routes/orderRouter.js"
+import feedbackRouter from "./routes/feedbackRouter.js";
 
 
 dotenv.config();
@@ -61,8 +62,9 @@ mongoose.connect(connectionString).then(
 
 
 app.use("/api/users", userRouter)
-app.use("/api/menu", menuRouter)
+app.use("/api/menus", menuRouter)
 app.use("/api/orders", orderRouter)
+app.use("/api/feedback", feedbackRouter);
 
 
 app.listen(5000, (req, res) => {

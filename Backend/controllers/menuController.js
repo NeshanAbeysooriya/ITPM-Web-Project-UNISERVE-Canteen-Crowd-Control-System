@@ -1,17 +1,17 @@
 import Menu from '../models/Menu.js';
 
 // @desc    Get all menu items (with Search and Category Filter)
-// @route   GET /api/menu
+// @route   GET /api/menus
 export const getMenuItems = async (req, res) => {
     try {
         let query;
         const reqQuery = { ...req.query };
 
-        // 1. Filter by Category (e.g., /api/menu?category=Lunch)
+        // 1. Filter by Category (e.g., /api/menus?category=Lunch)
         if (req.query.category) {
             query = Menu.find({ category: req.query.category });
         } 
-        // 2. Search by Name (e.g., /api/menu?search=Burger)
+        // 2. Search by Name (e.g., /api/menus?search=Burger)
         else if (req.query.search) {
             query = Menu.find({ name: { $regex: req.query.search, $options: 'i' } });
         } 
@@ -27,7 +27,7 @@ export const getMenuItems = async (req, res) => {
 };
 
 // @desc    Add a new menu item
-// @route   POST /api/menu
+// @route   POST /api/menus
 export const addMenuItem= async (req, res) => {
     try {
         const newItem = await Menu.create(req.body);
@@ -38,7 +38,7 @@ export const addMenuItem= async (req, res) => {
 };
 
 // @desc    Update menu item (Details or Sold Out Toggle)
-// @route   PUT /api/menu/:id
+// @route   PUT /api/menus/:id
 export const updateMenuItem  = async (req, res) => {
     try {
         const item = await Menu.findByIdAndUpdate(req.params.id, req.body, {
@@ -53,7 +53,7 @@ export const updateMenuItem  = async (req, res) => {
 };
 
 // @desc    Delete a menu item
-// @route   DELETE /api/menu/:id
+// @route   DELETE /api/menus/:id
 
 export const deleteMenuItem = async (req, res) => {
     try {
@@ -63,4 +63,18 @@ export const deleteMenuItem = async (req, res) => {
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
+};
+
+export const getMenuItemById = async (req, res) => {
+  try {
+    const item = await Menu.findById(req.params.id);
+
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    res.status(200).json({ success: true, data: item });
+  } catch (err) {
+    res.status(500).json({ message: "Server Error" });
+  }
 };

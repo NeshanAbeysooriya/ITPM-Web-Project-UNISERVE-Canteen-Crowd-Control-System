@@ -19,8 +19,9 @@ app.use(cors());
 app.use(express.json()); 
 
 // 3. Routes Configuration
-// This tells the app: "If a request starts with /api/menu, send it to menuRoutes.js"
-app.use('/api/menu', menuRoutes);
+// This tells the app: "If a request starts with /api/menus (or /api/menu), send it to menuRoutes.js"
+
+app.use('/api/menus', menuRoutes); // keep backward compatibility
 
 // 4. MongoDB Connection & Server Start
 const PORT = process.env.PORT || 5000;

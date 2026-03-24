@@ -34,7 +34,7 @@ export default function AboutUs() {
               real-time crowd analytics and seamless pre-ordering.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link to="/products" className="px-8 py-4 bg-secondary text-white font-bold rounded-2xl hover:bg-accent transition-all duration-300 shadow-xl shadow-secondary/10">
+              <Link to="/menu" className="px-8 py-4 bg-secondary text-white font-bold rounded-2xl hover:bg-accent transition-all duration-300 shadow-xl shadow-secondary/10">
                 Start Ordering
               </Link>
               <Link to="/how-it-works" className="px-8 py-4 bg-white border border-bordercolor font-bold rounded-2xl hover:bg-gray-50 transition-all duration-300">
@@ -152,7 +152,7 @@ export default function AboutUs() {
             Ready to reclaim your <span className="text-highlight">lunch break?</span>
           </h2>
           <Link
-            to="/products"
+            to="/menu"
             className="inline-flex items-center gap-3 px-10 py-5 bg-accent text-white font-black text-xl rounded-2xl hover:scale-105 transition-transform shadow-2xl shadow-accent/20"
           >
             Join the Food Revolution <MdArrowForward />

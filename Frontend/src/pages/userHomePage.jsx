@@ -47,7 +47,7 @@ export default function UserHomePage() {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              <Link to="/products" className="px-10 py-5 bg-secondary text-primary rounded-2xl font-bold text-lg hover:bg-secondary/90 transition-all flex items-center gap-3 group shadow-xl hover:shadow-secondary/20">
+              <Link to="/menu" className="px-10 py-5 bg-secondary text-primary rounded-2xl font-bold text-lg hover:bg-secondary/90 transition-all flex items-center gap-3 group shadow-xl hover:shadow-secondary/20">
                 Order Now
                 <MdOutlineFastfood className="text-2xl group-hover:rotate-12 transition-transform" />
               </Link>
@@ -126,7 +126,7 @@ export default function UserHomePage() {
               <h2 className="text-4xl font-bold tracking-tight mb-2">Popular Right Now</h2>
               <p className="text-secondary/50 font-medium italic">What your colleagues are loving today</p>
             </div>
-            <Link to="/products" className="hidden md:flex items-center gap-2 font-bold text-accent hover:underline decoration-2">
+            <Link to="/menu" className="hidden md:flex items-center gap-2 font-bold text-accent hover:underline decoration-2">
               Explore Full Menu <MdArrowForwardIos className="text-sm" />
             </Link>
           </div>

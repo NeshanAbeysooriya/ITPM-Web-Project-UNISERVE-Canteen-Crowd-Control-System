@@ -15,6 +15,7 @@ export default function Footer() {
     { name: "Pre-Order Now", href: "/menu" },
     { name: "My Orders", href: "/orders" }, 
     { name: "Menu & Prices", href: "/menu" },
+    { name: "Contact Us", href: "/contact" },
     { name: "How Pre-Order Works", href: "/how-it-works" },
   ];
 

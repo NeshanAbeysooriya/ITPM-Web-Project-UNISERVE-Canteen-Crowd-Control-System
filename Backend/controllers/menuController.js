@@ -30,24 +30,6 @@ export const getMenuItems = async (req, res) => {
 // @route   POST /api/menu
 export const addMenuItem= async (req, res) => {
     try {
-        // Generate menuID safely (avoid replace on undefined) and avoid duplicates.
-        const menuList = await Menu.find().sort({ createdAt: -1 }).limit(1);
-        let newMenuID = "M0000001";
-
-        if (menuList.length !== 0 && menuList[0].menuID) {
-            const lastMenuID = String(menuList[0].menuID).trim();
-            const match = /^M(\d+)$/.exec(lastMenuID);
-            if (match) {
-                const lastNumber = Number.parseInt(match[1], 10);
-                if (!Number.isNaN(lastNumber)) {
-                    const nextNumber = lastNumber + 1;
-                    newMenuID = "M" + nextNumber.toString().padStart(7, "0");
-                }
-            }
-        }
-
-        req.body.menuID = newMenuID;
-
         const newItem = await Menu.create(req.body);
         res.status(201).json({ success: true, data: newItem });
     } catch (err) {
@@ -81,4 +63,18 @@ export const deleteMenuItem = async (req, res) => {
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
+};
+
+export const getMenuItemById = async (req, res) => {
+  try {
+    const item = await Menu.findById(req.params.id);
+
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    res.status(200).json({ success: true, data: item });
+  } catch (err) {
+    res.status(500).json({ message: "Server Error" });
+  }
 };

@@ -28,8 +28,26 @@ export const getMenuItems = async (req, res) => {
 
 // @desc    Add a new menu item
 // @route   POST /api/menu
-export const addMenuItem = async (req, res) => {
+export const addMenuItem= async (req, res) => {
     try {
+        // Generate menuID safely (avoid replace on undefined) and avoid duplicates.
+        const menuList = await Menu.find().sort({ createdAt: -1 }).limit(1);
+        let newMenuID = "M0000001";
+
+        if (menuList.length !== 0 && menuList[0].menuID) {
+            const lastMenuID = String(menuList[0].menuID).trim();
+            const match = /^M(\d+)$/.exec(lastMenuID);
+            if (match) {
+                const lastNumber = Number.parseInt(match[1], 10);
+                if (!Number.isNaN(lastNumber)) {
+                    const nextNumber = lastNumber + 1;
+                    newMenuID = "M" + nextNumber.toString().padStart(7, "0");
+                }
+            }
+        }
+
+        req.body.menuID = newMenuID;
+
         const newItem = await Menu.create(req.body);
         res.status(201).json({ success: true, data: newItem });
     } catch (err) {
@@ -39,7 +57,7 @@ export const addMenuItem = async (req, res) => {
 
 // @desc    Update menu item (Details or Sold Out Toggle)
 // @route   PUT /api/menu/:id
-export const updateMenuItem = async (req, res) => {
+export const updateMenuItem  = async (req, res) => {
     try {
         const item = await Menu.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
@@ -54,6 +72,7 @@ export const updateMenuItem = async (req, res) => {
 
 // @desc    Delete a menu item
 // @route   DELETE /api/menu/:id
+
 export const deleteMenuItem = async (req, res) => {
     try {
         const item = await Menu.findByIdAndDelete(req.params.id);

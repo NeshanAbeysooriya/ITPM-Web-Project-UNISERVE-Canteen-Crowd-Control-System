@@ -1,6 +1,14 @@
 import mongoose from 'mongoose';
 
-const menuSchema = new mongoose.Schema({
+const menuSchema = new mongoose.Schema(
+{   
+    menuID: {
+        type: String,
+        required: true,
+        unique: true
+    },
+
+    
     name: { 
         type: String, 
         required: [true, "Please add a food item name"], 
@@ -30,7 +38,11 @@ const menuSchema = new mongoose.Schema({
     prepTime: { 
         type: Number, 
         default: 15 // Estimated preparation time in minutes
+    },
+    quantity: { 
+        type: Number, 
+        default: 0 // Available quantity/stock
     }
 }, { timestamps: true });
 
-export default mongoose.model('Menu', menuSchema);
+export default mongoose.model('Menu', menuSchema); 

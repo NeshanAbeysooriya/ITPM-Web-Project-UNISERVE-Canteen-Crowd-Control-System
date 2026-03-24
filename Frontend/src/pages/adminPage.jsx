@@ -134,11 +134,11 @@ export default function AdminPage() {
           </Link>
 
           <Link
-            to="/admin/products"
+            to="/admin/menu"
             className={`
               group flex items-center gap-3.5 px-5 py-3.5 rounded-2xl font-medium transition-all duration-200
               ${
-                currentPath === "/admin/products"
+                currentPath === "/admin/menu"
                   ? "bg-[var(--color-accent)]/10 text-[var(--color-accent)] shadow-sm"
                   : "text-gray-700 hover:bg-[var(--color-accent)]/5 hover:text-[var(--color-accent)]"
               }
@@ -148,7 +148,7 @@ export default function AdminPage() {
               className={`
                 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200
                 ${
-                  currentPath === "/admin/products"
+                  currentPath === "/admin/menu"
                     ? "bg-[var(--color-accent)] text-white shadow-md shadow-[var(--color-accent)]/20"
                     : "bg-gray-100 text-gray-600 group-hover:bg-[var(--color-accent)]/10 group-hover:text-[var(--color-accent)]"
                 }
@@ -157,7 +157,7 @@ export default function AdminPage() {
               <BsBox2Heart size={20} />
             </div>
             <span className="text-[15px]">Menu Item</span>
-            {currentPath === "/admin/products" && (
+            {currentPath === "/admin/menu" && (
               <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" />
             )}
           </Link>

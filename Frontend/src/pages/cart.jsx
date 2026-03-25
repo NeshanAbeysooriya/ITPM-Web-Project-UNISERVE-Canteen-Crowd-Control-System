@@ -1,4 +1,4 @@
-import { FaCaretDown, FaSortUp } from "react-icons/fa";
+import { FaCaretDown, FaSortUp, FaArrowLeft } from "react-icons/fa"; // Added FaArrowLeft
 import { FaRegTrashCan } from "react-icons/fa6";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -14,8 +14,19 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-32 md:pb-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Cart</h1>
+        {/* Header with Navigation Back */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Your Cart</h1>
+          {cart.length > 0 && (
+            <Link
+              to="/menu"
+              className="inline-flex items-center text-accent hover:text-accent/80 font-medium transition"
+            >
+              <FaArrowLeft className="mr-2" size={14} />
+              Continue Shopping
+            </Link>
+          )}
+        </div>
 
         {cart.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-md p-12 text-center border border-gray-200">

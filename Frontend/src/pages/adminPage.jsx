@@ -15,6 +15,7 @@ import AdminFeedbackPage from "./admin/adminFeedbackPage";
 import AdminMenuPage from "./admin/adminMenuPage";
 import AddMenuPage from "./admin/adminAddNewMenu";
 import UpdateMenuPage from "./admin/adminUpdateMenu";
+import AdminOrdersPage from "./admin/adminOrdersPage";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -296,6 +297,7 @@ export default function AdminPage() {
             <Routes>
               <Route path="/" element={<AdminDashboard />} />
               <Route path="/menu" element={<AdminMenuPage />} />
+              <Route path="/orders" element={<AdminOrdersPage />} />
               <Route path="/add-menu" element={<AddMenuPage/>} />
               <Route path="/update-menu" element={<UpdateMenuPage/>} />
               <Route path="/users" element={<AdminUsersPage />} />

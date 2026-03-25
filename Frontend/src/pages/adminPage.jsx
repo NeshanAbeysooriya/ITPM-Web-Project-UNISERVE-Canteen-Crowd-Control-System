@@ -1,6 +1,6 @@
-import { Link, Route, Routes, useNavigate } from "react-router-dom";
+import { Link, Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import { FaChartLine } from "react-icons/fa";
-import { MdShoppingCartCheckout } from "react-icons/md";
+import { MdShoppingCartCheckout, MdLogout } from "react-icons/md";
 import { BsBox2Heart } from "react-icons/bs";
 import { HiOutlineUsers } from "react-icons/hi";
 import { useEffect, useState } from "react";
@@ -18,7 +18,15 @@ import UpdateMenuPage from "./admin/adminUpdateMenu";
 
 export default function AdminPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [userLoaded, setUserLoaded] = useState(false);
+
+  // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -49,7 +57,6 @@ export default function AdminPage() {
       });
   }, [navigate]);
 
-  // ← We check current path here (needed for active state styling)
   const currentPath = location.pathname;
 
   return (
@@ -59,13 +66,11 @@ export default function AdminPage() {
         {/* Logo & Title */}
         <div className="p-6 border-b border-[var(--color-bordercolor)]">
           <div className="flex items-center gap-3.5">
-            
-              <img
-                src="/logo.png"
-                alt="Canteen Logo"
-                className="w-12 h-12 object-contain drop-shadow-sm"
-              />
-            
+            <img
+              src="/logo.png"
+              alt="Canteen Logo"
+              className="w-12 h-12 object-contain drop-shadow-sm"
+            />
             <div>
               <h1 className="text-2xl font-extrabold text-[var(--color-secondary)] tracking-tight">
                 Admin Panel
@@ -77,8 +82,8 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Navigation – your original structure preserved */}
-        <nav className="flex-1 px-4 py-8 space-y-2">
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
           <Link
             to="/admin"
             className={`
@@ -252,6 +257,17 @@ export default function AdminPage() {
               <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" />
             )}
           </Link>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full group flex items-center gap-3.5 px-5 py-3.5 rounded-2xl font-medium transition-all duration-200 text-red-600 hover:bg-red-50 mt-4"
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-100 text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-200">
+              <MdLogout size={20} />
+            </div>
+            <span className="text-[15px]">Logout</span>
+          </button>
         </nav>
 
         {/* Footer */}
@@ -272,7 +288,6 @@ export default function AdminPage() {
               Admin Panel
             </h1>
           </div>
-          {/* Mobile menu button placeholder */}
         </header>
 
         {/* Page Content */}
@@ -285,7 +300,6 @@ export default function AdminPage() {
               <Route path="/update-menu" element={<UpdateMenuPage/>} />
               <Route path="/users" element={<AdminUsersPage />} />
               <Route path="/feedback" element={<AdminFeedbackPage />} />
-             
             </Routes>
           ) : (
             <div className="h-[70vh] flex items-center justify-center">

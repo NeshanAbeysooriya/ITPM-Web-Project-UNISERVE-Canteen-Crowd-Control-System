@@ -179,8 +179,8 @@ export default function MenuPage() {
         }
       `}</style>
 
-      <div className="container">
-        <h1>🍽️ Canteen Menu</h1>
+      <div className="container" style={{ marginTop: "100px" }}>
+        <h1 className="pt-24">🍽️ Canteen Menu</h1>
 
         {/* 🔍 NEW SEARCH & FILTER UI */}
         <div className="search-container">

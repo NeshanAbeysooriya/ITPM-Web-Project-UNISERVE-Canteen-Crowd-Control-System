@@ -1,18 +1,46 @@
-import { useState } from "react";
-import { MdMenu, MdOutlineShoppingCart, MdNotificationsNone } from "react-icons/md";
+import { useState, useEffect } from "react";
+import {
+  MdMenu,
+  MdOutlineShoppingCart,
+  MdNotificationsNone,
+} from "react-icons/md";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import UserData from "./userData";
 import UserDataMobile from "./userDataMobile";
 
 export default function Header() {
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
 
+  // 🔍 SEARCH STATES (added)
+  const [searchText, setSearchText] = useState("");
+  const [results, setResults] = useState([]);
+  const [allMenu, setAllMenu] = useState([]);
+
+  // 🔍 FETCH MENU DATA (added)
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/api/menus")
+      .then((res) => setAllMenu(res.data.data))
+      .catch((err) => console.log(err));
+  }, []);
+
+  // 🔍 HANDLE SEARCH (added)
+  const handleSearch = (value) => {
+    setSearchText(value);
+
+    const filtered = allMenu.filter((item) =>
+      item.name.toLowerCase().includes(value.toLowerCase()),
+    );
+
+    setResults(filtered);
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
       {/* Main bar */}
       <div className="w-full h-16 sm:h-22 bg-gradient-to-r from-accent via-accent/95 to-green-700/90 backdrop-blur-md shadow-lg shadow-black/10">
         <div className="max-w-10xl mx-auto px-3 sm:px-5 lg:px-10 h-full flex items-center justify-between ">
-          
           {/* ─── Left ─── Logo + Mobile Menu Btn */}
           <div className="flex justify-start gap-4 sm:gap-6 ">
             <button
@@ -63,17 +91,38 @@ export default function Header() {
           {/* ─── Right ─── Actions */}
           <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">
             {/* Search (visible from xl up) */}
-            <div className="hidden xl:flex items-center bg-white/15 backdrop-blur-sm rounded-full pl-4 pr-3 py-1.5 border border-white/10 focus-within:border-highlight/60 transition-all">
+            <div className="relative hidden xl:flex items-center bg-white/15 backdrop-blur-sm rounded-full pl-4 pr-3 py-1.5 border border-white/10 focus-within:border-highlight/60 transition-all">
               <input
                 type="text"
                 placeholder="Search dishes..."
+                value={searchText}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="bg-transparent outline-none text-white placeholder-white/60 text-sm w-30 lg:w-52"
               />
               <span className="text-white/70 text-lg">🔍</span>
+
+              {/* 🔽 SEARCH DROPDOWN (added) */}
+              {searchText && (
+                <div className="absolute top-12 left-0 w-72 bg-white rounded-xl shadow-lg overflow-hidden z-50">
+                  {results.length > 0 ? (
+                    results.slice(0, 5).map((item) => (
+                      <Link
+                        to={`/menu?search=${item.name}&itemId=${item._id}`}
+                        key={item._id}
+                        className="block px-4 py-3 hover:bg-gray-100 text-black"
+                      >
+                        {item.name}
+                      </Link>
+                    ))
+                  ) : (
+                    <p className="p-4 text-gray-500">No results found</p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Notifications */}
-            <button
+            {/* <button
               className="relative text-white/90 hover:text-white transition-colors p-1.5 rounded-full hover:bg-white/10"
               aria-label="Notifications"
             >
@@ -81,7 +130,7 @@ export default function Header() {
               <span className="absolute -top-1 -right-1 bg-highlight text-[10px] font-bold text-white min-w-[18px] h-[18px] flex items-center justify-center rounded-full border-2 border-white shadow">
                 3
               </span>
-            </button>
+            </button> */}
 
             {/* Cart */}
             <Link
@@ -95,11 +144,8 @@ export default function Header() {
               </span>
             </Link>
 
-          
-
             {/* User Area */}
             <div className="hidden sm:block">
-             
               <UserData />
             </div>
           </div>
@@ -125,8 +171,16 @@ export default function Header() {
             `}
           >
             <div className="h-20 bg-gradient-to-r from-accent to-green-700 flex items-center justify-between px-5 text-white">
-              <Link to="/" className="flex items-center gap-3" onClick={() => setIsSideBarOpen(false)}>
-                <img src="logo.png" alt="Logo" className="h-11 w-auto object-contain" />
+              <Link
+                to="/"
+                className="flex items-center gap-3"
+                onClick={() => setIsSideBarOpen(false)}
+              >
+                <img
+                  src="logo.png"
+                  alt="Logo"
+                  className="h-11 w-auto object-contain"
+                />
                 <span className="font-bold text-lg tracking-tight">Foodie</span>
               </Link>
               <button
@@ -161,7 +215,6 @@ export default function Header() {
             </nav>
 
             <div className="mt-auto p-6 border-t border-bordercolor/30">
-              
               <UserDataMobile />
             </div>
           </div>

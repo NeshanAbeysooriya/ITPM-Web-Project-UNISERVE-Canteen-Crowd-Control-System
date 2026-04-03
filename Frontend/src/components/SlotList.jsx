@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getSlots } from "../api/timeslotApi";
 import SlotCard from "./SlotCard";
+import Footer from "./footer";
 
 const SlotList = () => {
   const [slots, setSlots] = useState([]);
@@ -53,8 +54,11 @@ const SlotList = () => {
           {slots.map((slot) => (
             <SlotCard key={slot._id} slot={slot} refreshSlots={fetchSlots} />
           ))}
+
+        
         </div>
       )}
+        
     </div>
   );
 };

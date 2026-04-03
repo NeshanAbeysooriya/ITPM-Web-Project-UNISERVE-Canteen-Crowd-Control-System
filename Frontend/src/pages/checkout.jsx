@@ -187,9 +187,9 @@ export default function CheckoutPage() {
                   Preferred Pickup Time
                 </label>
                 <button
-                  type="button"
-                  className="w-full px-5 py-4 bg-accent/5 border border-accent/30 rounded-xl text-accent font-medium hover:bg-accent/10 transition flex justify-between items-center"
-                  onClick={() => toast("Time slot selection – to be implemented")}
+                    type="button"
+                    className="w-full px-5 py-4 bg-accent/5 border border-accent/30 rounded-xl text-accent font-medium hover:bg-accent/10 transition flex justify-between items-center"
+                    onClick={() => navigate("/time-slots")}
                 >
                   <span>Select time slot</span>
                   <span>→</span>

@@ -16,6 +16,8 @@ import AdminMenuPage from "./admin/adminMenuPage";
 import AddMenuPage from "./admin/adminAddNewMenu";
 import UpdateMenuPage from "./admin/adminUpdateMenu";
 import AdminOrdersPage from "./admin/adminOrdersPage";
+import AdminTimeSlotManagement from "./admin/adminTimeSlotManagement";
+import TimeSlotAdminPanel from "./admin/timeSlotAdminPanel";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -302,6 +304,10 @@ export default function AdminPage() {
               <Route path="/update-menu" element={<UpdateMenuPage/>} />
               <Route path="/users" element={<AdminUsersPage />} />
               <Route path="/feedback" element={<AdminFeedbackPage />} />
+              <Route
+                path="/crowd"
+                element={<TimeSlotAdminPanel />}
+              />
             </Routes>
           ) : (
             <div className="h-[70vh] flex items-center justify-center">

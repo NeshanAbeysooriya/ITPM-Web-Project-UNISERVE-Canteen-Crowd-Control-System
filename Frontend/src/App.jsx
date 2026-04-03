@@ -9,6 +9,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import AdminPage from "./pages/adminPage";
 import ForgetPassword from "./pages/forgot-password";
 import UserDashboard from "./pages/userDashboard";
+import TimeSlotAdminPanel from "./pages/admin/timeSlotAdminPanel";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/dashboard/*" element={<UserDashboard/>} />
           <Route path="/admin/*" element={<AdminPage/>} />
           <Route path="/test" element={<TestPage />} />
+          <Route path="/panel" element={<TimeSlotAdminPanel />} />
         </Routes>
       </div>
       </GoogleOAuthProvider>

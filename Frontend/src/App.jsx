@@ -10,31 +10,31 @@ import AdminPage from "./pages/adminPage";
 import ForgetPassword from "./pages/forgot-password";
 import UserDashboard from "./pages/userDashboard";
 import TimeSlotAdminPanel from "./pages/admin/timeSlotAdminPanel";
+import UserRoute from "./components/userRoute";
 
 function App() {
   return (
     <BrowserRouter>
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <div className="w-full h-[100vh]">
-        <Toaster position="top-right" />
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <div className="w-full h-[100vh]">
+          <Toaster position="top-right" />
 
-        <Routes path="/">
-          {" "}
-          {/*install karagatta router-dom ekem ganne meka component ekak */}
-          {/*  me vage Route gdk dagann puluvam */}
-          <Route path="/*" element={<HomePage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/forget-password"
-            element={<ForgetPassword/>}
-          />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/dashboard/*" element={<UserDashboard/>} />
-          <Route path="/admin/*" element={<AdminPage/>} />
-          <Route path="/test" element={<TestPage />} />
-          <Route path="/panel" element={<TimeSlotAdminPanel />} />
-        </Routes>
-      </div>
+          <Routes path="/">
+            {" "}
+            {/*install karagatta router-dom ekem ganne meka component ekak */}
+            {/*  me vage Route gdk dagann puluvam */}
+            <Route path="/*" element={<HomePage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forget-password" element={<ForgetPassword />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route element={<UserRoute />}>
+              <Route path="/dashboard/*" element={<UserDashboard />} />
+            </Route>
+            <Route path="/admin/*" element={<AdminPage />} />
+            <Route path="/test" element={<TestPage />} />
+            <Route path="/panel" element={<TimeSlotAdminPanel />} />
+          </Routes>
+        </div>
       </GoogleOAuthProvider>
     </BrowserRouter>
   );

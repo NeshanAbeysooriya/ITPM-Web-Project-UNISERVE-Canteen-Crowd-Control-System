@@ -120,6 +120,7 @@ const goToOrderPage = (selectedSlotId, selectedTime) => {
       </div>
     </div>
   );
+
 };
 
 export default SlotCard;

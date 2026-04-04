@@ -86,13 +86,13 @@ const orderSchema = new mongoose.Schema(
         enum: ["Pending", "Preparing", "Ready", "Completed", "Cancelled"]
     },
 
-    // // ✅ Pickup time slot added
-    // pickupTime: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "TimeSlot",
-    //     required: true
+    // ✅ Pickup time slot added
+    pickupTime: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "TimeSlot",
+        required: true
         
-    // },
+    },
 
     date: {
         type: Date,

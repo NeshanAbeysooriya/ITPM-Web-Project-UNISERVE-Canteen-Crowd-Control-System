@@ -14,8 +14,11 @@ export default function CheckoutPage() {
   const [orderId, setOrderId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [pickupTime, setPickupTime] = useState("");
+  const [slotId, setSlotId] = useState(null);
+
   // Cart state
-  const [cart, setCart] = useState(location.state || []);
+  const [cart, setCart] = useState(location.state?.cart || []);
 
   // Fetch single menu item if cart is empty and menuId is in URL
   useEffect(() => {
@@ -51,6 +54,17 @@ export default function CheckoutPage() {
     }
   }, [cart, location.search]);
 
+  useEffect(() => {
+  if (location.state) {
+    if (location.state.name) setName(location.state.name);
+    if (location.state.phone) setPhone(location.state.phone);
+    if (location.state.address) setAddress(location.state.address);
+    if (location.state.pickupTime) setPickupTime(location.state.pickupTime);
+    if (location.state.slotId) setSlotId(location.state.slotId);
+    if (location.state.cart) setCart(location.state.cart);
+  }
+}, [location.state]);
+
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const total = subtotal;
 
@@ -67,6 +81,11 @@ export default function CheckoutPage() {
     toast.error("Your cart is empty");
     return;
   }
+
+  if (!slotId) {
+  toast.error("Please select a pickup time");
+  return;
+}
 
   if (!name.trim()) {
     toast.error("Name is required");
@@ -110,6 +129,7 @@ export default function CheckoutPage() {
         phone: phone.trim(),
         address: address.trim() || null,
         items,
+        slotId // ✅ IMPORTANT
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -126,7 +146,7 @@ export default function CheckoutPage() {
   }
 }
   return (
-    <div className="min-h-screen bg-primary py-8 px-4 sm:px-6 lg:px-8">
+   <div className="min-h-screen bg-primary pt-24 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         {/* Left / Main: Form */}
@@ -189,9 +209,22 @@ export default function CheckoutPage() {
                 <button
                     type="button"
                     className="w-full px-5 py-4 bg-accent/5 border border-accent/30 rounded-xl text-accent font-medium hover:bg-accent/10 transition flex justify-between items-center"
-                    onClick={() => navigate("/time-slots")}
+                    onClick={() => navigate("/time-slots", { 
+                      state: { cart, name, phone, address } 
+                    })}
                 >
-                  <span>Select time slot</span>
+                  <span>
+  {pickupTime 
+    ? new Date(pickupTime).toLocaleString([], { 
+        weekday: 'short', 
+        day: 'numeric', 
+        month: 'short', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: true 
+      }) 
+    : "Select time slot"}
+</span>
                   <span>→</span>
                 </button>
               </div>

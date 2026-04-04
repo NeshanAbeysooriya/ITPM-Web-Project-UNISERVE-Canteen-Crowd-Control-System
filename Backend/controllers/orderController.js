@@ -5,6 +5,14 @@ import { isAdmin, isCustomer } from "./userController.js";
 // ================= CREATE ORDER =================
 export async function createOrder(req, res) {
 
+    const { slotId } = req.body;
+
+if (!slotId) {
+  return res.status(400).json({
+    message: "Pickup slot is required"
+  });
+}
+
     console.log("BODY:", req.body);
 console.log("USER:", req.user);
 
@@ -89,7 +97,8 @@ console.log("USER:", req.user);
             email: user.email,
             phone,
             address: req.body.address,
-            total
+            total,
+             pickupTime: slotId // ✅ SAVE SLOT
         });
 
         const savedOrder = await newOrder.save();

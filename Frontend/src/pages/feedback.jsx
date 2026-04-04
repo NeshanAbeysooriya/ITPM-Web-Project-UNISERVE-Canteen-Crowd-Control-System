@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import axios from "axios"; // Recommended: npm install axios
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   MdStar,
   MdFastfood,
@@ -20,7 +20,7 @@ export default function FeedbackPage() {
     name: "",
     email: "",
     phone: "",
-    menuName: "", // Updated field name to match Backend Schema
+    menuName: "",
     comment: "",
     rating: 0,
   });
@@ -28,6 +28,39 @@ export default function FeedbackPage() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [allFeedbacks, setAllFeedbacks] = useState([]);
+
+  // --- NEW STATE FOR AUTO-SCROLL ---
+  const [scrollIndex, setScrollIndex] = useState(0);
+  const visibleCount = 3; // Number of feedbacks visible at once
+
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      try {
+        const res = await axios.get(
+          import.meta.env.VITE_API_URL + "/api/feedback",
+        );
+        setAllFeedbacks(res.data);
+      } catch (err) {
+        console.log(err);
+        toast.error("Failed to load feedback");
+      }
+    };
+    fetchFeedbacks();
+  }, []);
+
+  // --- AUTO-SCROLL LOGIC ---
+  useEffect(() => {
+    if (allFeedbacks.length <= visibleCount) return;
+
+    const interval = setInterval(() => {
+      setScrollIndex(
+        (prev) => (prev + 1) % (allFeedbacks.length - visibleCount + 1),
+      );
+    }, 4000); // Cycles every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [allFeedbacks]);
 
   const validate = () => {
     let newErrors = {};
@@ -50,7 +83,6 @@ export default function FeedbackPage() {
     if (validate()) {
       setIsSubmitting(true);
       try {
-        // Map frontend "name" to backend "fullName" as per your Mongoose schema
         const payload = {
           fullName: formData.name,
           email: formData.email,
@@ -61,14 +93,6 @@ export default function FeedbackPage() {
         };
 
         const token = localStorage.getItem("token");
-
-        const config = token
-          ? {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          : {};
 
         const response = await axios.post(
           import.meta.env.VITE_API_URL + "/api/feedback",
@@ -82,6 +106,11 @@ export default function FeedbackPage() {
 
         if (response.status === 200 || response.status === 201) {
           setSubmitted(true);
+          // Refresh list to include new feedback
+          const res = await axios.get(
+            import.meta.env.VITE_API_URL + "/api/feedback",
+          );
+          setAllFeedbacks(res.data);
         }
       } catch (err) {
         console.log(err);
@@ -147,7 +176,7 @@ export default function FeedbackPage() {
                         <MdEmail className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" />
                         <input
                           type="email"
-                          placeholder="University Email"
+                          placeholder="Enter Email"
                           className={`w-full pl-12 pr-4 py-4 bg-primary border ${errors.email ? "border-red-400" : "border-bordercolor"} rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/20 transition-all`}
                           value={formData.email}
                           onChange={(e) =>
@@ -163,7 +192,6 @@ export default function FeedbackPage() {
                     </div>
                   </div>
 
-                  {/* NEW MENU ITEM INPUT */}
                   <div className="space-y-1">
                     <div className="relative">
                       <MdRestaurantMenu className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" />
@@ -277,55 +305,48 @@ export default function FeedbackPage() {
             )}
           </div>
 
-          {/* RIGHT: LIVE FEED PREVIEW */}
+          {/* RIGHT: LIVE FEED PREVIEW (MODERN SCROLL SOLUTION) */}
           <div className="hidden lg:block space-y-8">
             <h3 className="text-2xl font-bold border-b-4 border-accent inline-block mb-4">
               Community Buzz
             </h3>
 
-            {/* Mock Feedback Cards */}
-            <div className="space-y-6 opacity-80">
-              {[
-                {
-                  name: "Jordan M.",
-                  dish: "Vegan Buddha Bowl",
-                  comment:
-                    "The QR pickup was so smooth! No more waiting in the heat.",
-                  stars: 5,
-                },
-                {
-                  name: "Ayesha K.",
-                  dish: "Chicken Tikka",
-                  comment:
-                    "Food was great, but the crowd radar said 'Low' when it was definitely 'Medium'.",
-                  stars: 4,
-                },
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-white/40 backdrop-blur-md border border-white p-6 rounded-[2.5rem] shadow-sm transform hover:-translate-x-2 transition-all"
-                >
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-highlight rounded-full flex items-center justify-center text-white text-xs font-bold uppercase">
-                        {item.name[0]}
+            {/* Container for Scrolling Cards */}
+            <div className="relative h-[550px] overflow-hidden">
+              <div
+                className="space-y-6 transition-all duration-1000 ease-in-out"
+                style={{ transform: `translateY(-${scrollIndex * 180}px)` }}
+              >
+                {allFeedbacks.map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-white/40 backdrop-blur-md border border-white p-6 rounded-[2.5rem] shadow-sm transform hover:-translate-x-2 transition-all h-[160px]"
+                  >
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-highlight rounded-full flex items-center justify-center text-white text-xs font-bold uppercase">
+                          {item.fullName?.charAt(0)}
+                        </div>
+                        <span className="font-bold text-sm">
+                          {item.fullName}{" "}
+                          <MdVerified className="inline text-blue-500" />
+                        </span>
                       </div>
-                      <span className="font-bold text-sm">
-                        {item.name}{" "}
-                        <MdVerified className="inline text-blue-500" />
-                      </span>
+                      <div className="flex text-highlight text-xs">
+                        {[...Array(item.rating)].map((_, i) => (
+                          <MdStar key={i} />
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex text-highlight text-xs">
-                      {[...Array(item.stars)].map((_, i) => (
-                        <MdStar key={i} />
-                      ))}
-                    </div>
+                    <p className="text-sm text-secondary/70 italic line-clamp-3">
+                      "{item.comment}"
+                    </p>
                   </div>
-                  <p className="text-sm text-secondary/70 italic">
-                    "{item.comment}"
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
+
+              {/* Bottom Fade Gradient for Modern Look */}
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-primary to-transparent pointer-events-none"></div>
             </div>
 
             {/* Support Info Card */}

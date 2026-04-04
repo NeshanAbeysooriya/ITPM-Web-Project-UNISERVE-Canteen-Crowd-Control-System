@@ -313,7 +313,7 @@ export default function CheckoutPage() {
               <button
                 onClick={() => {
                   setShowSuccess(false);
-                  navigate("/track");
+                  navigate("/orders");
                 }}
                 className="bg-accent text-white px-8 py-3.5 rounded-xl font-medium hover:bg-accent/90 transition shadow-sm flex-1 sm:flex-none"
               >

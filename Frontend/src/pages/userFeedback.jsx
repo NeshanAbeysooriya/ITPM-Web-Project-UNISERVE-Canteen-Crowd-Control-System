@@ -96,7 +96,7 @@ export default function MyFeedbackPage() {
 
   const navigate = useNavigate();
 
-  const fetchMyFeedback = async () => {
+  const fetchOrders = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Login Required");
@@ -107,20 +107,26 @@ export default function MyFeedbackPage() {
     try {
       const decoded = jwtDecode(token);
       const userEmail = decoded.email;
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/feedback`, {
+
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const filtered = res.data.filter((f) => f.email === userEmail);
-      setMyFeedbacks(filtered);
+
+      const filteredOrders = res.data.filter(order => order.email === userEmail);
+      setOrders(filteredOrders);
     } catch (err) {
-      toast.error("Loading failed");
+      console.error(err);
+      toast.error("Failed to load orders");
+      if (err.response && err.response.status === 401) {
+        navigate("/login");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMyFeedback();
+    fetchOrders();
   }, []);
 
   return (

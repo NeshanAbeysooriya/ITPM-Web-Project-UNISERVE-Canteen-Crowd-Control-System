@@ -7,8 +7,7 @@ import {
   ShoppingBag, 
   Clock, 
   PackageCheck, 
-  CheckCircle2, 
-  ArrowUpRight 
+  CheckCircle2 
 } from "lucide-react"; 
 import { Loder } from "../../components/loder";
 import OrderModal, { statusBadgeClass } from "../../components/orderInfoModel";
@@ -25,26 +24,32 @@ export default function AdminOrdersPage() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isLoading) {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
-      axios
-        .get(import.meta.env.VITE_API_URL + "/api/orders", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => {
-          setOrders(res.data);
-          setFilteredOrders(res.data);
-          setIsLoading(false);
-        })
-        .catch(() => setIsLoading(false));
+  // Optimized fetch function for real-time updates
+  const getOrders = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
     }
-  }, [isLoading, navigate]);
+
+    axios
+      .get(import.meta.env.VITE_API_URL + "/api/orders", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        setOrders(res.data);
+        setFilteredOrders(res.data);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  };
+
+  useEffect(() => {
+    getOrders();
+    // Real-time update every 30 seconds
+    const interval = setInterval(getOrders, 30000);
+    return () => clearInterval(interval);
+  }, [navigate]);
 
   useEffect(() => {
     let data = [...orders];
@@ -66,12 +71,9 @@ export default function AdminOrdersPage() {
     setFilteredOrders(data);
   }, [search, statusFilter, orders]);
 
-  // --- STATS CALCULATION (Mapping Backend words to your preferred Frontend words) ---
   const totalOrders = orders.length;
   const pending = orders.filter(o => (o.status || "").toLowerCase().trim() === "pending").length;
-  // This counts "PROCESSING" as "Preparing"
   const preparing = orders.filter(o => (o.status || "").toLowerCase().trim() === "processing").length;
-  // This counts "COMPLETED" as "Ready"
   const ready = orders.filter(o => (o.status || "").toLowerCase().trim() === "completed").length;
 
   return (
@@ -80,19 +82,14 @@ export default function AdminOrdersPage() {
         isModalOpen={isModelOpen}
         selectedOrder={selectedOrder}
         closeModal={() => setIsModelOpen(false)}
-        refresh={() => setIsLoading(true)}
+        refresh={getOrders}
       />
 
       <div className="mb-10">
-        <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
-          Order Management
-        </h1>
-        <p className="text-slate-500 mt-2 font-medium">
-          Manage, track and update all customer orders in real-time
-        </p>
+        <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Order Management</h1>
+        <p className="text-slate-500 mt-2 font-medium">Manage, track and update all customer orders in real-time</p>
       </div>
 
-      {/* STAT CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         <StatCard title="Total Orders" value={totalOrders} icon={<ShoppingBag size={20}/>} color="border-b-4 border-b-slate-400" />
         <StatCard title="Pending" value={pending} icon={<Clock size={20}/>} color="bg-amber-50 border-b-4 border-b-amber-400" textColor="text-amber-700" />
@@ -100,7 +97,6 @@ export default function AdminOrdersPage() {
         <StatCard title="Ready" value={ready} icon={<CheckCircle2 size={20}/>} color="bg-emerald-50 border-b-4 border-b-emerald-400" textColor="text-emerald-700" />
       </div>
 
-      {/* FILTER BAR (Updated dropdown labels) */}
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -109,27 +105,22 @@ export default function AdminOrdersPage() {
             placeholder="Search orders..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none transition-all"
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none"
           />
         </div>
-
-        <div className="relative w-full md:w-64">
-          <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none appearance-none cursor-pointer font-medium text-slate-700"
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="processing">Preparing</option> 
-            <option value="completed">Ready</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="w-full md:w-64 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-pointer font-medium"
+        >
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="processing">Preparing</option> 
+          <option value="completed">Ready</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
       </div>
 
-      {/* TABLE */}
       <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
         {isLoading ? (
           <div className="py-24 flex justify-center"><Loder /></div>
@@ -153,9 +144,7 @@ export default function AdminOrdersPage() {
                     onClick={() => { setSelectedOrder(item); setIsModelOpen(true); }}
                     className="group hover:bg-slate-50 transition-all cursor-pointer"
                   >
-                    <td className="py-5 px-8 font-bold text-slate-900 group-hover:text-accent">
-                      #{item.orderID}
-                    </td>
+                    <td className="py-5 px-8 font-bold text-slate-900 group-hover:text-accent">#{item.orderID}</td>
                     <td className="py-5 px-6">
                       <div className="flex flex-col">
                         <span className="font-bold text-slate-800">{item.customerName}</span>
@@ -168,16 +157,11 @@ export default function AdminOrdersPage() {
                       </span>
                     </td>
                     <td className="py-5 px-6 font-bold text-slate-900">LKR {item.total}</td>
-                    
-                    {/* TABLE DISPLAY (Replacing words for the UI) */}
                     <td className="py-5 px-6">
                       <span className={statusBadgeClass(item.status)}>
-                        {item.status === "PROCESSING" ? "PREPARING" : 
-                         item.status === "COMPLETED" ? "READY" : 
-                         item.status}
+                        {item.status === "PROCESSING" ? "PREPARING" : item.status === "COMPLETED" ? "READY" : item.status}
                       </span>
                     </td>
-
                     <td className="py-5 px-6 text-right pr-8 text-sm font-bold text-slate-700">
                       {new Date(item.date).toLocaleDateString()}
                     </td>
@@ -194,7 +178,7 @@ export default function AdminOrdersPage() {
 
 function StatCard({ title, value, color, textColor = "text-slate-900", icon }) {
   return (
-    <div className={`${color} p-6 rounded-3xl bg-white shadow-sm border border-slate-100 flex items-center justify-between transition-transform duration-200`}>
+    <div className={`${color} p-6 rounded-3xl bg-white shadow-sm border border-slate-100 flex items-center justify-between`}>
       <div>
         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{title}</p>
         <p className={`text-3xl font-bold mt-1 ${textColor}`}>{value}</p>

@@ -32,7 +32,7 @@ export default function UserDashboard() {
     },
     {
       id: "orders",
-      label: "Order History",
+      label: "Order Tracking",
       icon: <MdReceiptLong />,
       path: "/dashboard/orders",
     },

@@ -12,6 +12,12 @@ import AdminDashboard from "./admin/adminDashboard";
 import { VscFeedback } from "react-icons/vsc";
 import { LuActivity } from "react-icons/lu";
 import AdminFeedbackPage from "./admin/adminFeedbackPage";
+import AdminMenuPage from "./admin/adminMenuPage";
+import AddMenuPage from "./admin/adminAddNewMenu";
+import UpdateMenuPage from "./admin/adminUpdateMenu";
+import AdminOrdersPage from "./admin/adminOrdersPage";
+import AdminTimeSlotManagement from "./admin/adminTimeSlotManagement";
+import TimeSlotAdminPanel from "./admin/timeSlotAdminPanel";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -292,8 +298,16 @@ export default function AdminPage() {
           {userLoaded ? (
             <Routes>
               <Route path="/" element={<AdminDashboard />} />
+              <Route path="/menu" element={<AdminMenuPage />} />
+              <Route path="/orders" element={<AdminOrdersPage />} />
+              <Route path="/add-menu" element={<AddMenuPage/>} />
+              <Route path="/update-menu" element={<UpdateMenuPage/>} />
               <Route path="/users" element={<AdminUsersPage />} />
               <Route path="/feedback" element={<AdminFeedbackPage />} />
+              <Route
+                path="/crowd"
+                element={<TimeSlotAdminPanel />}
+              />
             </Routes>
           ) : (
             <div className="h-[70vh] flex items-center justify-center">

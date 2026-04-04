@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
+import { useNavigate } from "react-router-dom";
 import {
   Users,
   MessageSquare,
@@ -11,23 +11,26 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+
 const AdminReports = () => {
   const [timeRange, setTimeRange] = useState(7);
-  const navigate = useNavigate(); // 2. Initialize navigation
+  const navigate = useNavigate();
 
+  // ✅ Route mapping (FIXED)
+  const routeMap = {
+    user: "users",
+    feedback: "feedback",
+    menu: "menu",
+    order: "orders",
+    crowd: "crowd",
+  };
+
+  // ✅ Navigation handler
   const handleGenerateReport = (moduleId) => {
-    const routes = {
-      user: "/admin/reports/users",
-      feedback: "/admin/reports/feedback",
-      menu: "/admin/reports/menu",
-      order: "/admin/reports/orders",
-      crowd: "/admin/reports/crowd",
-    };
+    const path = routeMap[moduleId];
+    if (!path) return;
 
-    const route = routes[moduleId];
-    if (!route) return;
-
-    navigate(`${route}?range=${timeRange}`);
+    navigate(`/admin/reports/${path}?range=${timeRange}`);
   };
 
   const reportModules = [
@@ -73,14 +76,16 @@ const AdminReports = () => {
               <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
               Admin Analytics
             </div>
-            <h1 className="text-4xl md:text-5xl font-black ">System Reports</h1>
+            <h1 className="text-4xl md:text-5xl font-black">
+              System Reports
+            </h1>
             <p className="text-gray-500 max-w-md">
               Extract professional PDF insights using our secure data generation
               engine.
             </p>
           </div>
 
-          {/* Modern Toggle Switch */}
+          {/* Toggle (7 / 30 days) */}
           <div className="flex bg-white/50 backdrop-blur-sm p-1.5 rounded-2xl border border-bordercolor shadow-inner">
             {[7, 30].map((days) => (
               <button
@@ -98,7 +103,7 @@ const AdminReports = () => {
           </div>
         </header>
 
-        {/* Report Cards Grid */}
+        {/* Report Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {reportModules.map((item) => (
             <div
@@ -150,7 +155,7 @@ const AdminReports = () => {
           ))}
         </div>
 
-        {/* Enhanced Info Note */}
+        {/* Footer Note */}
         <footer className="mt-16 p-6 bg-secondary/5 border border-secondary/5 rounded-3xl flex items-center gap-6">
           <div className="hidden md:flex h-12 w-12 bg-white rounded-2xl items-center justify-center shadow-sm text-highlight shrink-0">
             <Calendar size={24} />
@@ -161,11 +166,13 @@ const AdminReports = () => {
               The generated report will strictly filter entries between
               <span className="text-secondary font-semibold mx-1">
                 {new Date(
-                  Date.now() - timeRange * 24 * 60 * 60 * 1000,
+                  Date.now() - timeRange * 24 * 60 * 60 * 1000
                 ).toLocaleDateString()}
               </span>
               and{" "}
-              <span className="text-secondary font-semibold mx-1">Today</span>.
+              <span className="text-secondary font-semibold mx-1">
+                Today
+              </span>.
             </p>
           </div>
         </footer>

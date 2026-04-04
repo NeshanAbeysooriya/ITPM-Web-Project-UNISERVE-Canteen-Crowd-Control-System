@@ -123,16 +123,18 @@ export default function MenuOverview() {
                   className="flex-1 h-[50px] rounded-xl border-2 border-accent text-accent font-semibold hover:bg-accent hover:text-white transition-all"
                   onClick={() => {
                     navigate("/checkout", {
-                      state: [
-                        {
-                          _id: item._id,
-                          name: item.name,
-                          price: item.price,
-                          image: item.image,
-                          quantity: 1,
-                        },
-                      ],
-                    });
+  state: {
+    cart: [
+      {
+        _id: item._id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        quantity: 1,
+      },
+    ],
+  },
+});
                   }}
                 >
                   Order Now

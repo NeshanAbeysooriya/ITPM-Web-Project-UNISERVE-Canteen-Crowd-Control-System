@@ -187,18 +187,20 @@ export default function CartPage() {
                 </div>
 
                 <Link
-                  to="/checkout"
-                  state={cart.map((item) => ({
-                    _id: item._id ?? item.productID ?? item.name,
-                    name: item.name,
-                    price: item.price,
-                    image: item.image,
-                    quantity: item.quantity,
-                  }))}
-                  className="w-full sm:w-auto bg-accent text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-accent/90 transition shadow-md text-center"
-                >
-                  Proceed to Checkout
-                </Link>
+  to="/checkout"
+  state={{ 
+    cart: cart.map((item) => ({
+      _id: item._id ?? item.productID ?? item.name,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      quantity: item.quantity,
+    })),
+  }}
+  className="w-full sm:w-auto bg-accent text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-accent/90 transition shadow-md text-center"
+>
+  Proceed to Checkout
+</Link>
               </div>
             </div>
           </>

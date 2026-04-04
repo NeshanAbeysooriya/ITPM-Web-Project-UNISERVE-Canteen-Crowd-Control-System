@@ -1,41 +1,32 @@
 import React, { useState } from "react";
 import { bookSlot } from "../api/timeslotApi";
 import { toast} from "react-hot-toast";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const SlotCard = ({ slot, refreshSlots }) => {
+  const location = useLocation(); 
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const cartFromCheckout = location.state?.cart || [];
 
-  const goToOrderPage = () => {
-    const orderPageBase = import.meta.env.VITE_ORDER_PAGE_URL || "/order";
-    const payload = {
-      slotId: slot._id,
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-      maxCapacity: slot.maxCapacity,
-      currentOrders: slot.currentOrders + 1,
-      status: slot.status,
-    };
-
-    sessionStorage.setItem("selectedSlot", JSON.stringify(payload));
-
-    const params = new URLSearchParams({
-      slotId: payload.slotId,
-      startTime: payload.startTime,
-      endTime: payload.endTime,
-      maxCapacity: String(payload.maxCapacity),
-      currentOrders: String(payload.currentOrders),
-      status: payload.status,
-    });
-
-    window.location.href = `${orderPageBase}?${params.toString()}`;
-  };
-
-  const handleBook = async () => {
+const goToOrderPage = (selectedSlotId, selectedTime) => {
+  navigate("/checkout", { 
+    state: {
+      cart: location.state?.cart || [], // use the cart from location.state
+      name: location.state?.name || "",
+      phone: location.state?.phone || "",
+      address: location.state?.address || "",
+      slotId: selectedSlotId,
+      pickupTime: selectedTime
+    }
+  });
+};
+   const handleBook = async () => {
     setLoading(true);
     try {
       await bookSlot(slot._id);
       toast.success("Slot booked successfully!");
-      goToOrderPage();
+      goToOrderPage(slot._id, slot.startTime);
       refreshSlots();
     } catch (err) {
       toast.error(err.response?.data?.message || "Booking failed");
@@ -112,6 +103,7 @@ const SlotCard = ({ slot, refreshSlots }) => {
       </div>
     </div>
   );
+
 };
 
 export default SlotCard;

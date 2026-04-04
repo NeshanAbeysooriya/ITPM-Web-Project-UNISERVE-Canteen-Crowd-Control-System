@@ -128,13 +128,13 @@ console.log("USER:", req.user);
 
 // ================= GET ORDERS =================
 export async function getOrders(req, res) {
-
     try {
         if (isAdmin(req)) {
-
+            // ✅ ADDED .populate("pickupTime") HERE
             const orders = await Order
                 .find()
                 .populate("items._id")
+                .populate("pickupTime") 
                 .sort({ date: -1 });
 
             return res.json(orders);
@@ -142,11 +142,12 @@ export async function getOrders(req, res) {
         } else if (isCustomer(req)) {
 
             const user = req.user;
-
+            
             const orders = await Order
-                .find({ email: user.email })
-                .populate("items._id")
-                .sort({ date: -1 });
+                 .find({ email: user.email })
+                 .populate("items._id")
+                 .populate("pickupTime")
+                 .sort({ date: -1 });
 
             return res.json(orders);
 

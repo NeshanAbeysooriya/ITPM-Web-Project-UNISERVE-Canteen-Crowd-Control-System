@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { 
   User, 
@@ -10,24 +10,18 @@ import {
   Mail, 
   Phone, 
   MapPin, 
-  ChevronRight 
+  FileText 
 } from "lucide-react";
 
 /* STATUS BADGE */
 export const statusBadgeClass = (status) => {
   const base = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider";
-
   switch ((status || "").toLowerCase()) {
-    case "completed":
-      return `${base} bg-green-100 text-green-700 border border-green-200`;
-    case "processing":
-      return `${base} bg-blue-100 text-blue-700 border border-blue-200`;
-    case "pending":
-      return `${base} bg-amber-100 text-amber-700 border border-amber-200`;
-    case "cancelled":
-      return `${base} bg-red-100 text-red-700 border border-red-200`;
-    default:
-      return `${base} bg-gray-100 text-gray-600 border border-gray-200`;
+    case "completed": return `${base} bg-green-100 text-green-700 border border-green-200`;
+    case "processing": return `${base} bg-blue-100 text-blue-700 border border-blue-200`;
+    case "pending": return `${base} bg-amber-100 text-amber-700 border border-amber-200`;
+    case "cancelled": return `${base} bg-red-100 text-red-700 border border-red-200`;
+    default: return `${base} bg-gray-100 text-gray-600 border border-gray-200`;
   }
 };
 
@@ -37,25 +31,46 @@ const formatLKR = (n) =>
     currency: "LKR",
   }).format(n ?? 0);
 
-export default function OrderModal({
-  isModalOpen,
-  selectedOrder,
-  closeModal,
-  refresh,
-}) {
-  const [status, setStatus] = useState(selectedOrder?.status);
+export default function OrderModal({ isModalOpen, selectedOrder, closeModal, refresh }) {
+  const [status, setStatus] = useState("");
+
+  useEffect(() => {
+    if (selectedOrder) setStatus(selectedOrder.status);
+  }, [selectedOrder]);
 
   if (!isModalOpen || !selectedOrder) return null;
 
+  // Updated helper to format the Start and End time from the TimeSlot object
+  const formatPickupTime = (timeValue) => {
+    if (!timeValue) return "As soon as possible";
+    
+    // If it's a populated object from the TimeSlot model
+    if (typeof timeValue === 'object' && timeValue.startTime && timeValue.endTime) {
+      const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+      const start = new Date(timeValue.startTime).toLocaleTimeString([], options);
+      const end = new Date(timeValue.endTime).toLocaleTimeString([], options);
+      return `${start} - ${end}`;
+    }
+
+    // Fallback logic for raw date strings
+    try {
+      const date = new Date(timeValue);
+      if (isNaN(date.getTime())) return timeValue; 
+      return date.toLocaleString([], { 
+        weekday: 'short', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+    } catch (e) {
+      return timeValue;
+    }
+  };
+
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
-      onClick={closeModal}
-    >
-      <div
-        className="w-full max-w-4xl rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" onClick={closeModal}>
+      <div className="w-full max-w-4xl rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+        
         {/* HEADER */}
         <div className="px-6 py-5 border-b flex justify-between items-center bg-white sticky top-0 z-10">
           <div className="flex flex-col">
@@ -63,44 +78,32 @@ export default function OrderModal({
               Order <span className="text-accent">#{selectedOrder.orderID}</span>
             </h2>
             <div className="flex items-center gap-2 mt-1">
-               <span className={statusBadgeClass(selectedOrder.status)}>
-                {selectedOrder.status}
-              </span>
-              <span className="text-gray-300">|</span>
-              <div className="flex items-center gap-1 text-xs text-gray-500">
-                <Clock size={14} />
-                {new Date(selectedOrder.date).toLocaleString()}
-              </div>
+               <span className={statusBadgeClass(selectedOrder.status)}>{selectedOrder.status}</span>
+               <span className="text-gray-300">|</span>
+               <div className="flex items-center gap-1 text-xs text-gray-500">
+                 <Clock size={14} /> {new Date(selectedOrder.date).toLocaleString()}
+               </div>
             </div>
           </div>
-
-          <button
-            onClick={closeModal}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
-          >
+          <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
             <X size={24} />
           </button>
         </div>
 
         {/* BODY */}
         <div className="p-6 space-y-6 overflow-y-auto bg-gray-50/50">
-          
-          {/* SUMMARY STRIP */}
-          <div className="bg-emerald-600 rounded-2xl p-6 text-white shadow-lg shadow-emerald-100 flex justify-between items-center">
+          <div className="bg-emerald-600 rounded-2xl p-6 text-white shadow-lg flex justify-between items-center">
             <div>
-              <p className="text-emerald-100 text-xs font-medium uppercase tracking-widest mb-1">Total Bill</p>
-              <p className="text-3xl font-black">
-                {formatLKR(selectedOrder.total)}
-              </p>
+              <p className="text-emerald-100 text-xs font-medium uppercase mb-1">Total Bill</p>
+              <p className="text-3xl font-black">{formatLKR(selectedOrder.total)}</p>
             </div>
-            <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl text-right">
-              <p className="text-xs font-medium opacity-90">Basket Size</p>
+            <div className="bg-white/20 px-4 py-2 rounded-xl text-right">
+              <p className="text-xs font-medium">Basket Size</p>
               <p className="text-lg font-bold">{selectedOrder.items.length} Items</p>
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {/* CUSTOMER CARD */}
             <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm uppercase tracking-tight">
                 <User size={18} className="text-accent" /> Customer Info
@@ -109,17 +112,25 @@ export default function OrderModal({
                 <Row icon={<User size={14}/>} label="Name" value={selectedOrder.customerName} />
                 <Row icon={<Mail size={14}/>} label="Email" value={selectedOrder.email} />
                 <Row icon={<Phone size={14}/>} label="Phone" value={selectedOrder.phone} />
+                
+                <div className="pt-4 mt-2 border-t space-y-4">
+                  {/* Notes mapping from 'address' field */}
+                  <Row 
+                    icon={<FileText size={14}/>} 
+                    label="Pickup Notes" 
+                    value={selectedOrder.address || "No special requests"} 
+                  />
 
-                {/* ✅ CHANGED HERE */}
-                <Row 
-                  icon={<MapPin size={14}/>} 
-                  label="Pickup Notes" 
-                  value={selectedOrder.pickupNotes || "No special requests"} 
-                />
+                  {/* PICKUP TIME - Now matches the Name/Email/Phone style exactly */}
+                  <Row 
+                    icon={<Clock size={14}/>} 
+                    label="Pickup Time" 
+                    value={formatPickupTime(selectedOrder.pickupTime)} 
+                  />
+                </div>
               </div>
             </div>
 
-            {/* PAYMENT SUMMARY */}
             <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm uppercase tracking-tight">
                 <CreditCard size={18} className="text-accent" /> Billing Detail
@@ -127,41 +138,27 @@ export default function OrderModal({
               <div className="space-y-4">
                 <Row label="Subtotal" value={formatLKR(selectedOrder.total)} />
                 <Row label="Tax (0%)" value={formatLKR(0)} />
-                <div className="pt-2 border-t flex justify-between items-center">
-                  <span className="font-bold text-gray-900">Final Total</span>
-                  <span className="text-xl font-black text-emerald-600">{formatLKR(selectedOrder.total)}</span>
+                <div className="pt-2 border-t flex justify-between items-center font-black">
+                  <span className="text-gray-900">Final Total</span>
+                  <span className="text-xl text-emerald-600">{formatLKR(selectedOrder.total)}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ORDER ITEMS LIST */}
           <div>
-            <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Package size={18} className="text-accent" /> Items in this Order
-            </h3>
+            <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2"><Package size={18} className="text-accent" /> Items in Order</h3>
             <div className="grid gap-3">
               {selectedOrder.items.map((it) => (
-                <div
-                  key={it.productID}
-                  className="group flex items-center gap-4 p-3 bg-white rounded-xl border border-gray-100 hover:border-accent/30 hover:shadow-md transition-all duration-200"
-                >
-                  <div className="relative overflow-hidden rounded-lg w-16 h-16 bg-gray-100">
-                    <img
-                      src={it.image}
-                      alt={it.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                  </div>
+                <div key={it.productID} className="flex items-center gap-4 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                  <img src={it.image} alt={it.name} className="w-16 h-16 object-cover rounded-lg bg-gray-100" />
                   <div className="flex-1">
-                    <p className="font-bold text-gray-900 group-hover:text-accent transition-colors">
-                      {it.name}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">ID: {it.productID}</p>
+                    <p className="font-bold text-gray-900">{it.name}</p>
+                    <p className="text-xs text-gray-400">ID: {it.productID}</p>
                   </div>
-                  <div className="text-right flex flex-col justify-center border-l pl-4">
-                    <p className="text-xs text-gray-400">{it.quantity} × {formatLKR(it.price)}</p>
-                    <p className="font-bold text-gray-900">{formatLKR(it.price * it.quantity)}</p>
+                  <div className="text-right border-l pl-4 font-bold text-gray-900">
+                    <p className="text-xs text-gray-400 font-normal">{it.quantity}x</p>
+                    {formatLKR(it.price * it.quantity)}
                   </div>
                 </div>
               ))}
@@ -170,44 +167,33 @@ export default function OrderModal({
         </div>
 
         {/* FOOTER */}
-        <div className="px-6 py-4 border-t bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="hidden sm:block">
-             <p className="text-xs text-gray-400 uppercase font-bold tracking-widest">Update Order Status</p>
-          </div>
-
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="flex-1 sm:w-40 px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium focus:ring-2 focus:ring-accent/20 outline-none transition-all cursor-pointer"
-            >
-              <option value="pending">🟡 Pending</option>
-              <option value="processing">🔵 Preparing</option>
-              <option value="completed">🟢 Ready</option>
-              <option value="cancelled">🔴 Cancelled</option>
-            </select>
-
-            <button
-              onClick={() => {
-                const token = localStorage.getItem("token");
-                axios.put(
-                  `${import.meta.env.VITE_API_URL}/api/orders/status/${selectedOrder.orderID}`,
-                  { status },
-                  { headers: { Authorization: `Bearer ${token}` } }
-                )
-                .then(() => {
-                  toast.success("Order status updated");
-                  closeModal();
-                  refresh();
-                })
-                .catch(() => toast.error("Update failed"));
-              }}
-              disabled={status === selectedOrder.status}
-              className="px-8 py-2.5 bg-accent text-white rounded-xl font-bold shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-30 disabled:pointer-events-none"
-            >
-              Update Status
-            </button>
-          </div>
+        <div className="px-6 py-4 border-t bg-gray-50 flex justify-end items-center gap-4">
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium outline-none cursor-pointer"
+          >
+            <option value="Pending">🟡 Pending</option>
+            <option value="Preparing">🔵 Preparing</option>
+            <option value="Ready">🟢 Ready</option>
+            <option value="Cancelled">🔴 Cancelled</option>
+          </select>
+          <button
+            onClick={() => {
+              const token = localStorage.getItem("token");
+              axios.put(`${import.meta.env.VITE_API_URL}/api/orders/status/${selectedOrder.orderID}`, { status }, { headers: { Authorization: `Bearer ${token}` } })
+              .then(() => {
+                toast.success("Order status updated");
+                closeModal();
+                refresh();
+              })
+              .catch(() => toast.error("Update failed"));
+            }}
+            disabled={status === selectedOrder.status}
+            className="px-8 py-2.5 bg-accent text-white rounded-xl font-bold shadow-lg shadow-accent/20 transition-all disabled:opacity-30 disabled:pointer-events-none"
+          >
+            Update Status
+          </button>
         </div>
       </div>
     </div>

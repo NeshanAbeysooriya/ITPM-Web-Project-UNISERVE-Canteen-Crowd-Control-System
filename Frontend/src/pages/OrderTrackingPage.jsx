@@ -10,13 +10,15 @@ import {
   ShoppingBag,
   ArrowRightCircle
 } from "lucide-react"; 
+import { jwtDecode } from "jwt-decode";
 
 export default function OrderTrackingPage() {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchActiveOrders = async () => {
+  const fetchOrders = async () => {
+    setOrders([]);
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -24,22 +26,29 @@ export default function OrderTrackingPage() {
     }
 
     try {
-      const res = await axios.get(
-        import.meta.env.VITE_API_URL + "/api/orders?status=active",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setOrders(res.data);
+      const decoded = jwtDecode(token);
+      const userEmail = decoded.email;
+      if (!userEmail) {
+        navigate("/login");
+        return;
+      }
+
+      const res = await axios.get(import.meta.env.VITE_API_URL + "/api/orders", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const userOrders = res.data.filter(order => order.email === userEmail);
+      setOrders(userOrders);
     } catch (err) {
       console.error("Error fetching orders:", err);
+      if (err.response && err.response.status === 401) navigate("/login");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchActiveOrders();
+    fetchOrders();
   }, []);
 
   const getStatusColor = (status) => {
@@ -114,6 +123,14 @@ export default function OrderTrackingPage() {
                     <p className="text-sm font-semibold text-gray-400 mt-1 flex items-center gap-1">
                       <Clock size={14} /> {new Date(order.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(order.date).toLocaleDateString()}
                     </p>
+
+                    {/* ✅ Real Pickup Slot */}
+                    <p className="text-sm text-amber-600 mt-2 font-medium">
+                      Pickup Slot:{" "}
+                      {order.pickupTime?.startTime && order.pickupTime?.endTime
+                        ? `${new Date(order.pickupTime.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(order.pickupTime.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                        : "Not assigned"}
+                    </p>
                   </div>
 
                   <div className={`px-5 py-2 rounded-2xl border text-sm font-bold uppercase tracking-wide ${getStatusColor(order.status)}`}>
@@ -140,7 +157,7 @@ export default function OrderTrackingPage() {
                     ))}
                   </div>
 
-                  {/* ✅ ADDED TOTAL AMOUNT */}
+                  {/* Total */}
                   <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center">
                     <span className="text-sm font-bold text-gray-600 uppercase tracking-wide">
                       Total
@@ -170,13 +187,19 @@ export default function OrderTrackingPage() {
 
                 {/* Footer Section */}
                 <div className="flex flex-col sm:flex-row justify-between items-center pt-6 border-t border-dashed border-gray-200 gap-4">
-                  <div className="flex items-center gap-3 bg-amber-50 px-4 py-2 rounded-xl">
-                    <span className="text-xl">⏱</span>
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-amber-600 leading-none">Pickup Estimate</p>
-                      <p className="text-sm font-black text-amber-900">12:30 – 12:45 PM</p>
+                  {order.pickupTime?.startTime && order.pickupTime?.endTime ? (
+                    <div className="flex items-center gap-3 bg-amber-50 px-4 py-2 rounded-xl">
+                      <span className="text-xl">⏱</span>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-amber-600 leading-none">Pickup Estimate</p>
+                        <p className="text-sm font-black text-amber-900">
+                          {new Date(order.pickupTime.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {new Date(order.pickupTime.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">Pickup slot not assigned yet</p>
+                  )}
 
                   <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-tighter italic">
                     <ArrowRightCircle size={16} className="text-accent" />

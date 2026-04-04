@@ -376,7 +376,7 @@ export async function sendOTP(req, res) {
         await transporter.sendMail({//send karana mail ek
             from: process.env.EMAIL_USER,
             to: email,
-            subject: "Password Reset OTP – Crystal Beauty Clear",
+            subject: "Password Reset OTP – UniServe Canteen Pre Order & Crowd Controll System",
             html: getDesignEmail({ otp, userName: firstName }),
 
         });

@@ -28,7 +28,7 @@ export default function CheckoutPage() {
 
       if (menuId) {
         axios
-          .get(`${import.meta.env.VITE_API_URL}/api/menu/${menuId}`) // ✅ Correct URL
+          .get(`${import.meta.env.VITE_API_URL}/api/menus/${menuId}`) // ✅ Correct URL
           .then((res) => {
             const item = res.data.data;
             if (item) {

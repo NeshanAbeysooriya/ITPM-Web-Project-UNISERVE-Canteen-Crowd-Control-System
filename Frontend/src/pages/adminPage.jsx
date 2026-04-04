@@ -1,8 +1,14 @@
-import { Link, Route, Routes, useNavigate, useLocation } from "react-router-dom";
+import {
+  Link,
+  Route,
+  Routes,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import { FaChartLine } from "react-icons/fa";
 import { MdShoppingCartCheckout, MdLogout } from "react-icons/md";
 import { BsBox2Heart } from "react-icons/bs";
-import { HiOutlineUsers } from "react-icons/hi";
+import { HiOutlineDocumentReport, HiOutlineUsers } from "react-icons/hi";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -16,8 +22,9 @@ import AdminMenuPage from "./admin/adminMenuPage";
 import AddMenuPage from "./admin/adminAddNewMenu";
 import UpdateMenuPage from "./admin/adminUpdateMenu";
 import AdminOrdersPage from "./admin/adminOrdersPage";
-import AdminTimeSlotManagement from "./admin/adminTimeSlotManagement";
 import TimeSlotAdminPanel from "./admin/timeSlotAdminPanel";
+import AdminReportPage from "./admin/adminReportPage";
+import AdminUserReportPage from "./admin/adminUserReportPage";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -261,6 +268,35 @@ export default function AdminPage() {
             )}
           </Link>
 
+          <Link
+            to="/admin/report"
+            className={`
+              group flex items-center gap-3.5 px-5 py-3.5 rounded-2xl font-medium transition-all duration-200
+              ${
+                currentPath === "/admin/report"
+                  ? "bg-[var(--color-accent)]/10 text-[var(--color-accent)] shadow-sm"
+                  : "text-gray-700 hover:bg-[var(--color-accent)]/5 hover:text-[var(--color-accent)]"
+              }
+            `}
+          >
+            <div
+              className={`
+                w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200
+                ${
+                  currentPath === "/admin/report"
+                    ? "bg-[var(--color-accent)] text-white shadow-md shadow-[var(--color-accent)]/20"
+                    : "bg-gray-100 text-gray-600 group-hover:bg-[var(--color-accent)]/10 group-hover:text-[var(--color-accent)]"
+                }
+              `}
+            >
+              <HiOutlineDocumentReport size={20} />
+            </div>
+            <span className="text-[15px]">Report</span>
+            {currentPath === "/admin/report" && (
+              <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" />
+            )}
+          </Link>
+
           {/* Logout Button */}
           <button
             onClick={handleLogout}
@@ -285,7 +321,11 @@ export default function AdminPage() {
         <header className="lg:hidden bg-white border-b border-[var(--color-bordercolor)] px-5 py-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/10 flex items-center justify-center">
-              <img src="/logo.png" alt="Logo" className="w-7 h-7 object-contain" />
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="w-7 h-7 object-contain"
+              />
             </div>
             <h1 className="text-xl font-bold text-[var(--color-secondary)]">
               Admin Panel
@@ -300,14 +340,19 @@ export default function AdminPage() {
               <Route path="/" element={<AdminDashboard />} />
               <Route path="/menu" element={<AdminMenuPage />} />
               <Route path="/orders" element={<AdminOrdersPage />} />
-              <Route path="/add-menu" element={<AddMenuPage/>} />
-              <Route path="/update-menu" element={<UpdateMenuPage/>} />
+              <Route path="/add-menu" element={<AddMenuPage />} />
+              <Route path="/update-menu" element={<UpdateMenuPage />} />
               <Route path="/users" element={<AdminUsersPage />} />
               <Route path="/feedback" element={<AdminFeedbackPage />} />
-              <Route
-                path="/crowd"
-                element={<TimeSlotAdminPanel />}
-              />
+              <Route path="/crowd" element={<TimeSlotAdminPanel />} />
+              <Route path="/report" element={<AdminReportPage />} />
+
+              {/* Individual Module Report Pages */}
+              <Route path="/reports/users" element={<AdminUserReportPage />} />
+              <Route path="/reports/feedback" element={<h1>Feedback</h1>} />
+              <Route path="/reports/menu" element={<h1>Menu</h1>} />
+              <Route path="/reports/orders" element={<h1>Order</h1>} />
+              <Route path="/reports/crowd" element={<h1>Crowd</h1>} />
             </Routes>
           ) : (
             <div className="h-[70vh] flex items-center justify-center">

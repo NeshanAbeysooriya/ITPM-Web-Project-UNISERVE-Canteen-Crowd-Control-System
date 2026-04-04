@@ -96,8 +96,12 @@ export default function Header() {
                 type="text"
                 placeholder="Search dishes..."
                 value={searchText}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="bg-transparent outline-none text-white placeholder-white/60 text-sm w-30 lg:w-52"
+                onChange={(e) => setSearchText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchText.trim() !== "") {
+                    navigate(`/menu?search=${searchText}`);
+                  }
+                }}
               />
               <span className="text-white/70 text-lg">🔍</span>
 
@@ -107,9 +111,12 @@ export default function Header() {
                   {results.length > 0 ? (
                     results.slice(0, 5).map((item) => (
                       <Link
-                        to={`/menu?search=${item.name}&itemId=${item._id}`}
+                        to={`/menu?search=${item.name}`}
                         key={item._id}
-                        className="block px-4 py-3 hover:bg-gray-100 text-black"
+                        onClick={() => {
+                          setSearchText("");
+                          setResults([]);
+                        }}
                       >
                         {item.name}
                       </Link>

@@ -11,26 +11,29 @@ import FeedbackPage from "./feedback";
 import MenuOverview from "./menuOverview";
 import ContactUsPage from "./contactUs";
 import UserTimeSlotPage from "./userTimeSlotPage";
-
+import UserRoute from "../components/userRoute";
 
 export default function HomePage() {
   return (
     <div className="w-full h-full bg-primary">
       <Header />
       <Routes path="/">
-        <Route path="/" element={<UserHomePage/>} />
-        <Route path="/Menu" element={<MenuPage/>} />
-        <Route path="/feedback" element={<FeedbackPage/>} />
-        <Route path="/contact" element={<ContactUsPage/>} />
-        <Route path="/about" element={<AboutUsPage/>} />
-        <Route path="/menu/:id" element={<MenuOverview/>} />
-        <Route path="/*" element={<h1>404 Not Found</h1>} />
-        <Route path="/cart" element={<CartPage/>} />
-        <Route path="/checkout" element={<CheckoutPage/>} />
-        <Route path="/orders" element={<UserOrdersPage/>} />
-        <Route path="/track" element={<OrderTrackingPage />} />
-        <Route path="/time-slots" element={<UserTimeSlotPage />} />
+        <Route path="/" element={<UserHomePage />} />
+        <Route path="/contact" element={<ContactUsPage />} />
+        <Route path="/about" element={<AboutUsPage />} />
 
+        <Route element={<UserRoute />}>
+          <Route path="/Menu" element={<MenuPage />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
+          <Route path="/menu/:id" element={<MenuOverview />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/orders" element={<UserOrdersPage />} />
+          <Route path="/track" element={<OrderTrackingPage />} />
+          <Route path="/time-slots" element={<UserTimeSlotPage />} />
+        </Route>
+
+        <Route path="/*" element={<h1>404 Not Found</h1>} />
       </Routes>
     </div>
   );

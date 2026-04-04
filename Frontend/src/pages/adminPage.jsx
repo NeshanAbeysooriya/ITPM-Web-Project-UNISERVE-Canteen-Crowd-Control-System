@@ -25,6 +25,7 @@ import AdminOrdersPage from "./admin/adminOrdersPage";
 import TimeSlotAdminPanel from "./admin/timeSlotAdminPanel";
 import AdminReportPage from "./admin/adminReportPage";
 import AdminUserReportPage from "./admin/adminUserReportPage";
+import AdminOrderReportPage from "./admin/adminOrderReportPage";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -351,7 +352,7 @@ export default function AdminPage() {
               <Route path="/reports/users" element={<AdminUserReportPage />} />
               <Route path="/reports/feedback" element={<h1>Feedback</h1>} />
               <Route path="/reports/menu" element={<h1>Menu</h1>} />
-              <Route path="/reports/orders" element={<h1>Order</h1>} />
+              <Route path="/reports/orders" element={<AdminOrderReportPage/>} />
               <Route path="/reports/crowd" element={<h1>Crowd</h1>} />
             </Routes>
           ) : (

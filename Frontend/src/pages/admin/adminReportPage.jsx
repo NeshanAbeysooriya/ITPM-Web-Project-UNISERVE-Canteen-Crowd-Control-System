@@ -13,7 +13,7 @@ import {
 
 
 const AdminReports = () => {
-  const [timeRange, setTimeRange] = useState(7);
+  const [timeRange, setTimeRange] = useState(1);
   const navigate = useNavigate();
 
   // ✅ Route mapping (FIXED)
@@ -49,7 +49,18 @@ const AdminReports = () => {
     {
       id: "menu",
       name: "Menu Management",
-      desc: "Performance tracking for dishes, category popularity, and seasonal updates.",
+      desc: "Daily summary of menu performance, stock, and revenue for smarter preparation.",
+      bullets: [
+        "Total items sold per day",
+        "Most popular food item",
+        "Sold out items",
+        "Total revenue per day",
+        "Remaining stock",
+        "Analyze daily performance",
+        "Plan next day food preparation",
+        "Reduce food waste",
+        "Improve profit management",
+      ],
       icon: <Utensils />,
     },
     {
@@ -87,17 +98,17 @@ const AdminReports = () => {
 
           {/* Toggle (7 / 30 days) */}
           <div className="flex bg-white/50 backdrop-blur-sm p-1.5 rounded-2xl border border-bordercolor shadow-inner">
-            {[7, 30].map((days) => (
+            {[1, 7, 30].map((days) => (
               <button
                 key={days}
                 onClick={() => setTimeRange(days)}
-                className={`relative px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
+                className={`relative px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
                   timeRange === days
                     ? "bg-accent text-white shadow-lg scale-105"
                     : "text-gray-400 hover:text-secondary"
                 }`}
               >
-                {days} Days
+                {days === 1 ? "Daily" : `${days} Days`}
               </button>
             ))}
           </div>
@@ -130,9 +141,17 @@ const AdminReports = () => {
                 <h3 className="text-2xl font-bold mb-3 group-hover:text-accent transition-colors">
                   {item.name}
                 </h3>
-                <p className="text-gray-500 text-sm leading-relaxed mb-8 flex-grow">
+                <p className="text-gray-500 text-sm leading-relaxed mb-4">
                   {item.desc}
                 </p>
+                {item.bullets && (
+                  <ul className="mb-6 space-y-2 text-xs text-slate-500 list-disc list-inside">
+                    {item.bullets.map((bullet) => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
+                )}
+                <div className="flex-1" />
 
                 <button
                   onClick={() => handleGenerateReport(item.id)}

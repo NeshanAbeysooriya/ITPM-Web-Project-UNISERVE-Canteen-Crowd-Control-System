@@ -27,6 +27,7 @@ import AdminReportPage from "./admin/adminReportPage";
 import AdminUserReportPage from "./admin/adminUserReportPage";
 import AdminOrderReportPage from "./admin/adminOrderReportPage";
 import AdminFeedbackReportPage from "./admin/adminFeedbackReportPage";
+import AdminMenuReportPage from "./admin/adminMenuReportPage";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -351,9 +352,9 @@ export default function AdminPage() {
 
               {/* Individual Module Report Pages */}
               <Route path="/reports/users" element={<AdminUserReportPage />} />
-              <Route path="/reports/feedback" element={<AdminFeedbackReportPage/>} />
-              <Route path="/reports/menu" element={<h1>Menu</h1>} />
-              <Route path="/reports/orders" element={<AdminOrderReportPage/>} />
+              <Route path="/reports/feedback" element={<AdminFeedbackReportPage />} />
+              <Route path="/reports/menu" element={<AdminMenuReportPage />} />
+              <Route path="/reports/orders" element={<AdminOrderReportPage />} />
               <Route path="/reports/crowd" element={<h1>Crowd</h1>} />
             </Routes>
           ) : (

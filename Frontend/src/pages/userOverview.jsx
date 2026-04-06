@@ -16,6 +16,7 @@ import { Loder } from "../components/loder";
 export default function UserOverview() {
   const [orders, setOrders] = useState([]);
   const [slots, setSlots] = useState([]);
+  const [favoriteItems, setFavoriteItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -36,11 +37,19 @@ export default function UserOverview() {
           axios.get(`${import.meta.env.VITE_API_URL}/api/slots`, config).catch(() => ({ data: [] })) 
         ]);
 
+        const favoriteIds = JSON.parse(localStorage.getItem("userFavoriteMenuIds") || "[]");
+        let favorites = [];
+        if (favoriteIds.length > 0) {
+          const menusRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/menus`, config);
+          favorites = (menusRes.data.data || []).filter((item) => favoriteIds.includes(item._id));
+        }
+
         // Log to console so you can see the raw data structure
         console.log("Orders Received:", ordersRes.data);
         
         setOrders(ordersRes.data || []);
         setSlots(slotsRes.data || []);
+        setFavoriteItems(favorites);
       } catch (err) {
         console.error("Dashboard Fetch Error:", err);
       } finally {
@@ -168,7 +177,69 @@ export default function UserOverview() {
         </div>
       )}
 
-      {/* 3. BOTTOM GRID */}
+      {/* 3. FAVORITES SECTION */}
+      <div className="bg-white border border-bordercolor rounded-[2.5rem] p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+          <div>
+            <h3 className="text-2xl font-black text-secondary">Your Favorite Meals</h3>
+            <p className="text-sm text-secondary/50 mt-2">Quick access to your favorite menu items with the same view options as the main menu.</p>
+          </div>
+          <button
+            className="px-5 py-3 bg-accent text-white rounded-2xl font-bold hover:bg-accent/90 transition-all"
+            onClick={() => navigate("/Menu")}
+          >
+            Browse Menu
+          </button>
+        </div>
+
+        {favoriteItems.length > 0 ? (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {favoriteItems.map((item) => (
+              <div key={item._id} className="bg-slate-50 border border-bordercolor rounded-3xl p-5 flex flex-col gap-4">
+                <div className="flex items-start gap-4">
+                  <img
+                    src={
+                      item.image?.startsWith("http")
+                        ? item.image
+                        : `http://localhost:5000/uploads/${item.image}`
+                    }
+                    alt={item.name}
+                    className="w-24 h-24 rounded-3xl object-cover"
+                  />
+                  <div className="flex-1">
+                    <h4 className="text-lg font-bold text-secondary">{item.name}</h4>
+                    <p className="text-sm text-secondary/70 mt-1">{item.description}</p>
+                    <p className="mt-3 font-bold text-accent">Rs. {item.price}</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    className="px-4 py-3 bg-accent text-white rounded-2xl font-semibold hover:bg-accent/90 transition-all"
+                    onClick={() => navigate(`/menu/${item._id}`)}
+                  >
+                    View Item
+                  </button>
+                  {item.isAvailable && (
+                    <button
+                      className="px-4 py-3 border border-accent text-accent rounded-2xl font-semibold hover:bg-accent/10 transition-all"
+                      onClick={() => navigate(`/menu/${item._id}`)}
+                    >
+                      Order Now
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-3xl border border-dashed border-secondary/20 p-8 text-center">
+            <p className="font-bold text-secondary">No favorite menu items yet.</p>
+            <p className="text-sm text-secondary/50 mt-2">Mark items as favorites in the menu and they will show up here.</p>
+          </div>
+        )}
+      </div>
+
+      {/* 4. BOTTOM GRID */}
       <div className="grid md:grid-cols-2 gap-8">
         
         {/* Crowd Radar */}

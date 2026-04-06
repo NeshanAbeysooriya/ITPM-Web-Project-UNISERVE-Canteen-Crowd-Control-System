@@ -78,6 +78,7 @@ function MenuDeleteConfirm(props) {
 /* ================= MAIN PAGE ================= */
 export default function AdminMenuPage() {
   const [menuItems, setMenuItems] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
   const [selectedID, setSelectedID] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -109,8 +110,17 @@ export default function AdminMenuPage() {
         />
       )}
 
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-accent">Menu Management</h1>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold text-accent">Menu Management</h1>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search menu items by name or category..."
+            className="mt-4 w-full max-w-md border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+          />
+        </div>
 
         <Link
           to="/admin/add-menu"
@@ -140,7 +150,16 @@ export default function AdminMenuPage() {
             </thead>
 
             <tbody className="bg-white divide-y">
-              {menuItems.map((item) => (
+              {menuItems
+                .filter((item) => {
+                  const query = searchQuery.trim().toLowerCase();
+                  if (!query) return true;
+                  return (
+                    item.name?.toLowerCase().includes(query) ||
+                    item.category?.toLowerCase().includes(query)
+                  );
+                })
+                .map((item) => (
                 <tr key={item._id}>
 
                   <td className="py-3 px-4">

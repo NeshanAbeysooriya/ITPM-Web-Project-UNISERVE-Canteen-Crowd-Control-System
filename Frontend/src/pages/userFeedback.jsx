@@ -96,7 +96,7 @@ export default function MyFeedbackPage() {
 
   const navigate = useNavigate();
 
-  const fetchOrders = async () => {
+  const fetchMyFeedback = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Login Required");
@@ -107,26 +107,20 @@ export default function MyFeedbackPage() {
     try {
       const decoded = jwtDecode(token);
       const userEmail = decoded.email;
-
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/orders`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/feedback`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      const filteredOrders = res.data.filter(order => order.email === userEmail);
-      setOrders(filteredOrders);
+      const filtered = res.data.filter((f) => f.email === userEmail);
+      setMyFeedbacks(filtered);
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to load orders");
-      if (err.response && err.response.status === 401) {
-        navigate("/login");
-      }
+      toast.error("Loading failed");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchOrders();
+    fetchMyFeedback();
   }, []);
 
   return (
@@ -140,7 +134,7 @@ export default function MyFeedbackPage() {
       )}
 
       {/* Modern Soft Header */}
-      <header className="pt-10 pb-12 px-6">
+      <header className="pt-20 pb-12 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-accent font-bold text-sm bg-accent/10 w-fit px-4 py-1 rounded-full">

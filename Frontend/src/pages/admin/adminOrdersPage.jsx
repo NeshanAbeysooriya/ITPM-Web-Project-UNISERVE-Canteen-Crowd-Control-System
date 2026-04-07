@@ -24,7 +24,6 @@ export default function AdminOrdersPage() {
 
   const navigate = useNavigate();
 
-  // Optimized fetch function for real-time updates
   const getOrders = () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -46,7 +45,6 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     getOrders();
-    // Real-time update every 30 seconds
     const interval = setInterval(getOrders, 30000);
     return () => clearInterval(interval);
   }, [navigate]);
@@ -55,9 +53,12 @@ export default function AdminOrdersPage() {
     let data = [...orders];
 
     if (statusFilter !== "all") {
-      data = data.filter(
-        (o) => (o.status || "").toLowerCase().trim() === statusFilter
-      );
+      data = data.filter((o) => {
+        const s = (o.status || "").toLowerCase().trim();
+        if (statusFilter === "completed") return s === "completed" || s === "ready";
+        if (statusFilter === "processing") return s === "processing" || s === "preparing";
+        return s === statusFilter;
+      });
     }
 
     if (search.trim()) {
@@ -72,9 +73,16 @@ export default function AdminOrdersPage() {
   }, [search, statusFilter, orders]);
 
   const totalOrders = orders.length;
+  
   const pending = orders.filter(o => (o.status || "").toLowerCase().trim() === "pending").length;
-  const preparing = orders.filter(o => (o.status || "").toLowerCase().trim() === "processing").length;
-  const ready = orders.filter(o => (o.status || "").toLowerCase().trim() === "completed").length;
+  const preparing = orders.filter(o => {
+    const s = (o.status || "").toLowerCase().trim();
+    return s === "preparing" || s === "processing";
+  }).length;
+  const ready = orders.filter(o => {
+    const s = (o.status || "").toLowerCase().trim();
+    return s === "ready" || s === "completed";
+  }).length;
 
   return (
     <div className="w-full min-h-screen p-8 bg-[#F8FAFC]">
@@ -138,35 +146,57 @@ export default function AdminOrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {filteredOrders.map((item) => (
-                  <tr
-                    key={item.orderID}
-                    onClick={() => { setSelectedOrder(item); setIsModelOpen(true); }}
-                    className="group hover:bg-slate-50 transition-all cursor-pointer"
-                  >
-                    <td className="py-5 px-8 font-bold text-slate-900 group-hover:text-accent">#{item.orderID}</td>
-                    <td className="py-5 px-6">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-slate-800">{item.customerName}</span>
-                        <span className="text-xs text-slate-400 font-medium">{item.phone}</span>
-                      </div>
-                    </td>
-                    <td className="py-5 px-6 text-center">
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-xs">
-                        {item.items?.length || 0}
-                      </span>
-                    </td>
-                    <td className="py-5 px-6 font-bold text-slate-900">LKR {item.total}</td>
-                    <td className="py-5 px-6">
-                      <span className={statusBadgeClass(item.status)}>
-                        {item.status === "PROCESSING" ? "PREPARING" : item.status === "COMPLETED" ? "READY" : item.status}
-                      </span>
-                    </td>
-                    <td className="py-5 px-6 text-right pr-8 text-sm font-bold text-slate-700">
-                      {new Date(item.date).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
+                {filteredOrders.map((item) => {
+                  const s = (item.status || "").toLowerCase().trim();
+                  
+                  // This section ensures the correct string is sent to the styling function
+                  let statusForStyling = "";
+                  let displayStatus = "";
+
+                  if (s === "pending") {
+                    statusForStyling = "PENDING";
+                    displayStatus = "PENDING";
+                  } else if (s === "processing" || s === "preparing") {
+                    statusForStyling = "PROCESSING"; // Using the value your CSS likely expects
+                    displayStatus = "PREPARING";
+                  } else if (s === "completed" || s === "ready") {
+                    statusForStyling = "COMPLETED"; // Using the value your CSS likely expects
+                    displayStatus = "READY";
+                  } else {
+                    statusForStyling = s.toUpperCase();
+                    displayStatus = s.toUpperCase();
+                  }
+
+                  return (
+                    <tr
+                      key={item.orderID}
+                      onClick={() => { setSelectedOrder(item); setIsModelOpen(true); }}
+                      className="group hover:bg-slate-50 transition-all cursor-pointer"
+                    >
+                      <td className="py-5 px-8 font-bold text-slate-900 group-hover:text-accent">#{item.orderID}</td>
+                      <td className="py-5 px-6">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-800">{item.customerName}</span>
+                          <span className="text-xs text-slate-400 font-medium">{item.phone}</span>
+                        </div>
+                      </td>
+                      <td className="py-5 px-6 text-center">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-xs">
+                          {item.items?.length || 0}
+                        </span>
+                      </td>
+                      <td className="py-5 px-6 font-bold text-slate-900">LKR {item.total}</td>
+                      <td className="py-5 px-6">
+                        <span className={statusBadgeClass(statusForStyling)}>
+                          {displayStatus}
+                        </span>
+                      </td>
+                      <td className="py-5 px-6 text-right pr-8 text-sm font-bold text-slate-700">
+                        {new Date(item.date).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -4,72 +4,90 @@ import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { FaFilePdf, FaCheckCircle, FaSpinner, FaStar } from "react-icons/fa";
-import { IoChevronDown } from "react-icons/io5";
+import {
+  IoClose,
+  IoTrashOutline,
+  IoStar,
+  IoChevronDown,
+} from "react-icons/io5";
+import {
+  FaFilePdf,
+  FaCheckCircle,
+  FaSpinner,
+  FaSearch,
+  FaCommentAlt,
+  FaStarHalfAlt,
+} from "react-icons/fa";
 import { Loder } from "../../components/loder";
 import logo from "../../../public/logo.png";
 
-export default function AdminFeedbackReportPage() {
+export default function AdminFeedbackPage() {
   const [feedbacks, setFeedbacks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [hasAutoDownloaded, setHasAutoDownloaded] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [ratingFilter, setRatingFilter] = useState("all");
+  const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
+  const [feedbackToDelete, setFeedbackToDelete] = useState(null);
 
   const location = useLocation();
   const navigate = useNavigate();
 
   const queryParams = new URLSearchParams(location.search);
-  const range = queryParams.get("range");
-  const isValidRange = range === "7" || range === "30";
+  const range = queryParams.get("range") || "7";
+  const isValidRange = ["1", "7", "30"].includes(range);
 
   useEffect(() => {
     if (!isValidRange) {
-      navigate("?range=30", { replace: true });
+      navigate("?range=7", { replace: true });
     }
   }, [isValidRange, navigate]);
 
-  useEffect(() => {
-    const fetchFeedbacks = async () => {
-      const token = localStorage.getItem("token");
-      try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/feedback`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        console.log("API RESPONSE", res.data);
-        console.log("fIrst feedback", res.data[0]);
+  const fetchFeedbacks = async () => {
+    const token = localStorage.getItem("token");
+    setIsLoading(true);
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/feedback`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      setFeedbacks(res.data);
+    } catch (error) {
+      toast.error("Failed to fetch feedbacks");
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        setFeedbacks(res.data);
-      } catch (error) {
-        toast.error("Failed to fetch feedback data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  useEffect(() => {
     fetchFeedbacks();
   }, []);
 
+  // Filtering Logic
+  const filteredDisplayFeedbacks = feedbacks.filter((f) => {
+    const matchesSearch =
+      f.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      f.menuName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRating =
+      ratingFilter === "all" || f.rating.toString() === ratingFilter;
+    return matchesSearch && matchesRating;
+  });
+
+  // Auto-download Trigger
   useEffect(() => {
-    if (
-      !isLoading &&
-      isValidRange &&
-      feedbacks.length > 0 &&
-      !hasAutoDownloaded
-    ) {
+    if (!isLoading && feedbacks.length > 0 && !hasAutoDownloaded) {
       generatePDFReport(parseInt(range));
       setHasAutoDownloaded(true);
     }
   }, [isLoading, range, feedbacks, hasAutoDownloaded]);
 
   const generatePDFReport = (days) => {
-    if (!feedbacks || feedbacks.length === 0) {
-      toast.error("No feedback available");
-      return;
-    }
-
+    if (!feedbacks || feedbacks.length === 0) return;
     setIsGenerating(true);
 
     setTimeout(() => {
@@ -77,172 +95,115 @@ export default function AdminFeedbackReportPage() {
         const doc = new jsPDF();
         const today = new Date();
         const startDate = new Date();
-        startDate.setDate(today.getDate() - days);
+        startDate.setHours(0, 0, 0, 0);
+        if (days > 1) startDate.setDate(today.getDate() - (days - 1));
 
         const filtered = feedbacks.filter(
-          (f) => new Date(f.createdAt) >= startDate,
+          (f) => new Date(f.createdAt || f.updatedAt) >= startDate,
         );
+        const avgRating = (
+          filtered.reduce((acc, curr) => acc + curr.rating, 0) /
+            filtered.length || 0
+        ).toFixed(1);
 
         const img = new Image();
         img.src = logo;
 
         img.onload = function () {
-          // --- 1. TOP ACCENT BAR ---
-          doc.setFillColor(34, 197, 94);
-          doc.rect(0, 0, 210, 4, "F");
-
-          // --- 2. BRANDED HEADER ---
-          doc.addImage(img, "PNG", 14, 12, 12, 12);
+          // Header
+          doc.setFillColor(34, 197, 94); // UniServe Green
+          doc.rect(0, 0, 210, 45, "F");
+          doc.addImage(img, "PNG", 15, 10, 15, 15);
           doc.setFont("helvetica", "bold");
           doc.setFontSize(22);
-          doc.setTextColor(31, 41, 55);
-          doc.text("UniServe", 28, 22);
-
-          // Contact Meta (Right Aligned)
-          doc.setFontSize(8);
-          doc.setFont("helvetica", "normal");
-          doc.setTextColor(100);
-          const rightAlign = 196;
-          doc.text("Feedback & Quality Control", rightAlign, 15, {
-            align: "right",
-          });
-          doc.setTextColor(34, 197, 94);
-          doc.text("Phone: 011 452 3698", rightAlign, 20, { align: "right" });
-          doc.text("Email: support@uniserve.com", rightAlign, 24, {
-            align: "right",
-          });
-          doc.setTextColor(100);
-          doc.text("Auto-Generated Report", rightAlign, 28, { align: "right" });
-
-          // --- 3. COLORFUL SUMMARY CARDS ---
-          const total = filtered.length;
-          const highRating = filtered.filter((f) => f.rating >= 4).length;
-          const lowRating = total - highRating;
-
-          // Card 1: Total (Slate)
-          doc.setFillColor(241, 245, 249);
-          doc.roundedRect(14, 40, 56, 25, 3, 3, "F");
-          doc.setFontSize(8);
-          doc.setTextColor(100);
-          doc.text("TOTAL REVIEWS", 19, 48);
-          doc.setFontSize(14);
-          doc.setTextColor(31, 41, 55);
-          doc.text(`${total}`, 19, 58);
-
-          // Card 2: Positive (Green)
-          doc.setFillColor(220, 252, 231);
-          doc.roundedRect(77, 40, 56, 25, 3, 3, "F");
-          doc.setFontSize(8);
-          doc.setTextColor(22, 101, 52);
-          doc.text("POSITIVE (4-5*)", 82, 48);
-          doc.setFontSize(14);
-          doc.text(`${highRating}`, 82, 58);
-
-          // Card 3: Critical (Red)
-          doc.setFillColor(254, 226, 226);
-          doc.roundedRect(140, 40, 56, 25, 3, 3, "F");
-          doc.setFontSize(8);
-          doc.setTextColor(153, 27, 27);
-          doc.text("CRITICAL (1-3*)", 145, 48);
-          doc.setFontSize(14);
-          doc.text(`${lowRating}`, 145, 58);
-
-          // --- 4. REPORT TITLE ---
-          doc.setFontSize(14);
-          doc.setFont("helvetica", "bold");
-          doc.setTextColor(31, 41, 55);
-          doc.text("Customer Feedback Analytics", 14, 82);
+          doc.setTextColor(255, 255, 255);
+          doc.text("UniServe", 35, 20);
           doc.setFontSize(9);
           doc.setFont("helvetica", "normal");
-          doc.setTextColor(107, 114, 128);
-          doc.text(`Timeline: Last ${days} Days Generation`, 14, 88);
+          doc.text("University Canteen Management System", 35, 26);
 
-          // --- 5. DATA TABLE (MATCHES USER REPORT STYLE) ---
-          const tableRows = filtered.map((f) => [
-            f.fullName.toUpperCase(),
-            f.menuName,
-            `${f.rating} / 5`,
-            f.comment.substring(0, 45) + (f.comment.length > 45 ? "..." : ""),
-            new Date(f.createdAt).toLocaleDateString(),
-          ]);
+          doc.setFontSize(8);
+          doc.text("support@uniserve.com", 195, 15, { align: "right" });
+          doc.text("011 452 3698", 195, 20, { align: "right" });
 
+          // Title
+          doc.setTextColor(31, 41, 55);
+          doc.setFontSize(16);
+          doc.setFont("helvetica", "bold");
+          doc.text("CUSTOMER FEEDBACK REPORT", 15, 60);
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(100);
+          doc.text(
+            `Timeline: Last ${days} Days | Generated: ${today.toLocaleDateString()}`,
+            15,
+            67,
+          );
+
+          // KPI Cards
+          doc.setFillColor(239, 246, 255);
+          doc.roundedRect(15, 75, 58, 22, 2, 2, "F");
+          doc.setFontSize(7);
+          doc.setTextColor(29, 78, 216);
+          doc.text("TOTAL REVIEWS", 20, 81);
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.text(`${filtered.length} Feedbacks`, 20, 89);
+
+          doc.setFillColor(255, 251, 235);
+          doc.roundedRect(76, 75, 58, 22, 2, 2, "F");
+          doc.setFontSize(7);
+          doc.setTextColor(180, 83, 9);
+          doc.text("AVG RATING", 81, 81);
+          doc.setFontSize(10);
+          doc.text(`${avgRating} / 5.0`, 81, 89);
+
+          // Table
           autoTable(doc, {
-            startY: 95,
+            startY: 105,
             head: [["CUSTOMER", "MENU ITEM", "RATING", "COMMENT", "DATE"]],
-            body: tableRows,
+            body: filtered.map((f) => [
+              f.fullName.toUpperCase(),
+              f.menuName,
+              `${f.rating} Stars`,
+              f.comment,
+              new Date(f.createdAt || f.updatedAt).toLocaleDateString(),
+            ]),
             theme: "striped",
-            headStyles: {
-              fillColor: [31, 41, 55],
-              textColor: [255, 255, 255],
-              fontSize: 8,
-              fontStyle: "bold",
-              halign: "center",
-            },
-            bodyStyles: {
-              fontSize: 8,
-              textColor: [55, 65, 81],
-              cellPadding: 5,
-            },
-            alternateRowStyles: { fillColor: [249, 250, 251] },
-            columnStyles: {
-              2: { halign: "center", fontStyle: "bold" },
-              4: { halign: "center" },
-            },
-            didParseCell: function (data) {
-              if (data.section === "body" && data.column.index === 2) {
-                const rating = parseInt(data.cell.raw);
-                if (rating >= 4)
-                  data.cell.styles.textColor = [34, 197, 94]; // Green
-                else if (rating <= 2)
-                  data.cell.styles.textColor = [220, 38, 38]; // Red
-              }
-            },
+            headStyles: { fillColor: [34, 197, 94], fontSize: 8 },
+            bodyStyles: { fontSize: 7 },
+            margin: { left: 15, right: 15 },
           });
-
-          // --- 6. FOOTER ---
-          const pageCount = doc.internal.getNumberOfPages();
-          for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFillColor(241, 245, 249);
-            doc.rect(0, 280, 210, 20, "F");
-            doc.setFontSize(8);
-            doc.setTextColor(100);
-            doc.text(
-              "UniServe Management System - Confidential Feedback Report",
-              14,
-              290,
-            );
-            doc.text(`Page ${i} of ${pageCount}`, 196, 290, { align: "right" });
-          }
 
           doc.save(`UniServe_Feedback_Report_${days}d.pdf`);
           setShowSuccessModal(true);
+          setIsGenerating(false);
         };
       } catch (err) {
-        toast.error("PDF Generation failed");
-      } finally {
+        toast.error("PDF Generation Failed");
         setIsGenerating(false);
       }
     }, 800);
   };
 
   return (
-    <div className="min-h-screen w-full p-4 md:p-8 bg-[#F8FAFC]">
+    <div className="min-h-screen w-full p-6 md:p-8 bg-[#F8FAFC]">
+      {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-sm w-full border border-slate-100">
+          <div className="bg-white p-8 rounded-[2rem] shadow-2xl text-center max-w-sm w-full border border-slate-100">
             <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <FaCheckCircle size={32} />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            <h2 className="text-xl font-bold text-slate-900 mb-1">
               Report Ready
             </h2>
-            <p className="text-slate-500 mb-6 text-sm">
-              Your {range}-day feedback analysis has been successfully exported.
+            <p className="text-slate-500 mb-6 text-xs">
+              The feedback analysis has been downloaded.
             </p>
             <button
               onClick={() => setShowSuccessModal(false)}
-              className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold transition-all"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold"
             >
               Close
             </button>
@@ -250,59 +211,120 @@ export default function AdminFeedbackReportPage() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900">
-              Feedback Analytics
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+              Feedback Management
             </h1>
-            <p className="text-slate-500">
-              Monitor customer satisfaction metrics.
+            <p className="text-slate-500 text-sm font-medium">
+              Analyze customer satisfaction and reviews.
             </p>
           </div>
 
           <div className="group relative">
             <button
               disabled={isGenerating}
-              className="flex items-center gap-3 bg-white border border-slate-200 px-6 py-3 rounded-2xl font-bold text-slate-700 shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-3 bg-white border border-slate-200 px-5 py-3 rounded-xl font-bold text-slate-700 shadow-sm hover:border-emerald-500 transition-all"
             >
               {isGenerating ? (
                 <FaSpinner className="animate-spin text-emerald-500" />
               ) : (
                 <FaFilePdf className="text-rose-500" />
               )}
-              <span>
-                {isGenerating
-                  ? "Processing..."
-                  : `Download ${range} Day Report`}
+              <span className="text-xs uppercase tracking-wider">
+                Export {range} Days
               </span>
-              <IoChevronDown className="group-hover:rotate-180 transition-transform" />
+              <IoChevronDown className="text-slate-400" />
             </button>
-
-            <div className="absolute right-0 mt-2 w-52 bg-white border border-slate-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-2">
-              <button
-                onClick={() => {
-                  setHasAutoDownloaded(false);
-                  navigate("?range=7");
-                }}
-                className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-slate-50 text-slate-600"
-              >
-                Last 7 Days
-              </button>
-              <button
-                onClick={() => {
-                  setHasAutoDownloaded(false);
-                  navigate("?range=30");
-                }}
-                className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-slate-50 text-slate-600"
-              >
-                Last 30 Days
-              </button>
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-2">
+              {[
+                { l: "Today", v: "1" },
+                { l: "Last 7 Days", v: "7" },
+                { l: "Last 30 Days", v: "30" },
+              ].map((opt) => (
+                <button
+                  key={opt.v}
+                  onClick={() => {
+                    setHasAutoDownloaded(false);
+                    navigate(`?range=${opt.v}`);
+                  }}
+                  className={`w-full text-left px-4 py-2 text-xs font-bold ${range === opt.v ? "bg-emerald-50 text-emerald-600" : "text-slate-600 hover:bg-slate-50"}`}
+                >
+                  {opt.l}
+                </button>
+              ))}
             </div>
           </div>
         </header>
 
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        {/* KPI Cards */}
+        {!isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center text-xl">
+                <FaCommentAlt />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Total Reviews
+                </p>
+                <p className="text-xl font-black text-slate-900">
+                  {feedbacks.length}
+                </p>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-xl">
+                <IoStar />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Avg Rating
+                </p>
+                <p className="text-xl font-black text-slate-900">
+                  {(
+                    feedbacks.reduce((acc, c) => acc + c.rating, 0) /
+                      feedbacks.length || 0
+                  ).toFixed(1)}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Search and Filters */}
+        <div className="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full md:w-96">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+            <input
+              type="text"
+              placeholder="Search by Customer or Menu..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 bg-white p-1 rounded-2xl border border-slate-200 shadow-sm">
+            {["all", "5", "4", "3"].map((star) => (
+              <button
+                key={star}
+                onClick={() => setRatingFilter(star)}
+                className={`px-5 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${
+                  ratingFilter === star
+                    ? "bg-slate-900 text-white shadow-lg"
+                    : "text-slate-500 hover:bg-slate-50"
+                }`}
+              >
+                {star === "all" ? "All" : `${star} Stars`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Table Section */}
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
           {isLoading ? (
             <div className="py-20 flex justify-center">
               <Loder />
@@ -310,41 +332,44 @@ export default function AdminFeedbackReportPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className="bg-slate-50/50 border-b border-slate-200">
+                <thead className="bg-slate-50 border-b border-slate-100">
                   <tr>
-                    <th className="py-4 px-6 text-[11px] font-bold uppercase text-slate-400 tracking-wider">
+                    <th className="py-5 px-8 text-[10px] font-bold uppercase text-slate-500 tracking-widest">
                       Customer
                     </th>
-                    <th className="py-4 px-6 text-[11px] font-bold uppercase text-slate-400 tracking-wider text-center">
-                      Item
+                    <th className="py-5 px-8 text-[10px] font-bold uppercase text-slate-500 tracking-widest text-center">
+                      Menu Item
                     </th>
-                    <th className="py-4 px-6 text-[11px] font-bold uppercase text-slate-400 tracking-wider text-center">
+                    <th className="py-5 px-8 text-[10px] font-bold uppercase text-slate-500 tracking-widest text-center">
                       Rating
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {feedbacks.map((f) => (
+                <tbody className="divide-y divide-slate-50">
+                  {filteredDisplayFeedbacks.map((f) => (
                     <tr
                       key={f._id}
                       className="hover:bg-slate-50/50 transition-colors"
                     >
-                      <td className="py-4 px-6">
-                        <div className="flex flex-col">
-                          <p className="font-bold text-slate-900 text-sm">
-                            {f.fullName}
-                          </p>
-                          <p className="text-xs text-slate-400">{f.email}</p>
-                        </div>
+                      <td className="py-5 px-8">
+                        <p className="font-bold text-slate-800 text-sm">
+                          {f.fullName}
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-bold">
+                          {f.email}
+                        </p>
                       </td>
-                      <td className="py-4 px-6 text-center">
-                        <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase">
+                      <td className="py-5 px-8 text-center">
+                        <span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase bg-amber-50 text-amber-600">
                           {f.menuName}
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="flex items-center justify-center gap-1 text-amber-500 font-bold">
-                          <FaStar size={12} /> {f.rating}
+                      <td className="py-5 px-8">
+                        <div className="flex justify-center items-center gap-1 text-amber-500">
+                          <IoStar />{" "}
+                          <span className="text-slate-900 font-bold text-xs">
+                            {f.rating}
+                          </span>
                         </div>
                       </td>
                     </tr>

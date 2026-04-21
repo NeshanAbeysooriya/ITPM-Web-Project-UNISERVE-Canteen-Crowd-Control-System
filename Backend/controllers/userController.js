@@ -66,7 +66,7 @@ export function loginUser(req, res) {
     ).then(
         (user) => {//e email ekt user kenek hamba unad kiyala balann ona
             if (user == null) {
-                res.status(404).json(
+                return res.status(404).json(
                     {
                         message: "User not found"
                     }
@@ -95,7 +95,7 @@ export function loginUser(req, res) {
                         process.env.JWT_SECRET
                     )
 
-                    res.json(
+                    return res.json(
                         {
                             message: "Login successful",
                             token: token,
@@ -110,7 +110,7 @@ export function loginUser(req, res) {
                         }
                     )
                 } else {
-                    res.status(500).json(
+                    return res.status(500).json(
                         {
                             message: "Invalid password"
                         }

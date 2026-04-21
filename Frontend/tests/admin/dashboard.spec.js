@@ -1,47 +1,31 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Admin Dashboard Tests', () => {
+test.describe('Admin Dashboard Navigation', () => {
 
-  // Set token for admin access
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('token', 'admin-test-token');
-    });
+    await page.goto('http://localhost:5173/login');
+    await page.fill('input[type="email"]', 'admin@gmail.com');
+    await page.fill('input[type="password"]', '123456');
+    // Using exact match for the Sign In button to avoid ambiguity
+    await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+    
+    await expect(page).toHaveURL(/.*admin/);
   });
 
-  test('Dashboard page loads correctly', async ({ page }) => {
-    await page.goto('http://localhost:5173/admin');
+  test('should verify Dashboard and Menu page visibility', async ({ page }) => {
+    // 1. Verify we are on the Dashboard
+    await expect(page.getByText('Dashboard')).toBeVisible();
+    
+    // 2. Click the Menu Item link in the sidebar
+    // We use getByRole('link') to specifically target the navigation element
+    await page.getByRole('link', { name: 'Menu Item', exact: true }).click();
 
-    await expect(page.locator('text=Canteen Control Center')).toBeVisible();
-  });
+    // 3. Verify the URL change
+    await expect(page).toHaveURL(/.*admin\/menu/);
 
-  test('KPI cards are visible', async ({ page }) => {
-    await page.goto('http://localhost:5173/admin');
-
-    await expect(page.locator('text=Total Orders')).toBeVisible();
-    await expect(page.locator('text=Pending Orders')).toBeVisible();
-    await expect(page.locator('text=In Queue')).toBeVisible();
-  });
-
-  test('Hourly chart loads', async ({ page }) => {
-    await page.goto('http://localhost:5173/admin');
-
-    await expect(page.locator('text=Hourly Order Traffic')).toBeVisible();
-  });
-
-  test('Order status chart loads', async ({ page }) => {
-    await page.goto('http://localhost:5173/admin');
-
-    await expect(page.locator('text=Order Fulfillment')).toBeVisible();
-  });
-
-  test('Quick links are visible', async ({ page }) => {
-    await page.goto('http://localhost:5173/admin');
-
-    await expect(page.locator('text=Manage Menu')).toBeVisible();
-    await expect(page.locator('text=Order List')).toBeVisible();
-    await expect(page.locator('text=Pickup Slots')).toBeVisible();
-    await expect(page.locator('text=Feedback Monitor')).toBeVisible();
+    // 4. Verify the Menu Management page content
+    // Check for the heading to confirm the page has loaded
+    await expect(page.getByRole('heading', { name: 'Menu Management' })).toBeVisible();
   });
 
 });

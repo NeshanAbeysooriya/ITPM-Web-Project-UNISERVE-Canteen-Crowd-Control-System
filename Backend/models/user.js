@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema(
         },
     },
     {
-        timestamps: true, // ⭐ THIS IS THE FIX
+        timestamps: true, 
     }
 );
 
